@@ -21,7 +21,13 @@ export default {
               if (thisPromise !== promiseId) return
               this[key] = value
             }).catch(err => {
-              throw err
+              if (thisPromise !== promiseId) return
+              const handler = options.errorHandler === false
+                ? ()=>{}
+                : options.errorHandler
+                  ? options.errorHandler
+                  : console.err.bind(console, 'Error evaluating async computed property:')
+              handler(err.stack)
             })
           }, { immediate: true })
         })
