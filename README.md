@@ -130,6 +130,24 @@ const vm = new Vue({
 */
 ````
 
+## Options
+
+By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
+
+If you want to use a custom logging function, the plugin takes an `errorHandler` option, which should be the function you want called with the error information.
+
+For example: 
+
+````js
+Vue.use(AsyncComputed, { errorHandler: function (msg) {
+  console.log('Hey, an error!')
+  console.log('---')
+  console.log(msg)
+})
+````
+
+You can pass `false` in order to silently ignore rejected promises.
+
 ## License
 
 MIT © [Benjamin Fox](http://github.com/foxbenjaminfox)
