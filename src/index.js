@@ -2,6 +2,8 @@ const prefix = '_async_computed$'
 
 export default {
   install (Vue, options) {
+    options = options || {}
+
     Vue.mixin({
       created () {
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
@@ -22,11 +24,13 @@ export default {
               this[key] = value
             }).catch(err => {
               if (thisPromise !== promiseId) return
-              const handler = options.errorHandler === false
-                ? ()=>{}
+
+              if (options.errorHandler === false) return
+
+              const handler = (options.errorHandler === undefined)
+                ?  console.error.bind(console, 'Error evaluating async computed property:')
                 : options.errorHandler
-                  ? options.errorHandler
-                  : console.err.bind(console, 'Error evaluating async computed property:')
+
               handler(err.stack)
             })
           }, { immediate: true })
