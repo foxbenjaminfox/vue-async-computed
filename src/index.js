@@ -1,4 +1,4 @@
-const prefix = '_async_computed_'
+const prefix = '_async_computed$'
 
 export default {
   install (Vue, options) {
