@@ -65,7 +65,7 @@ new Vue({
 }
 ````
 
-This is especily useful with ES7 async functions:
+This is especially useful with ES7 async functions:
 
 ````js
 new Vue({
