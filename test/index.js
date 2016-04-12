@@ -2,7 +2,10 @@ import test from "tape"
 import AsyncComputed from "../src"
 import Vue from 'vue'
 
-Vue.use(AsyncComputed)
+const testErrorLog = []
+Vue.use(AsyncComputed, {
+  errorHandler: msg => testErrorLog.push(msg)
+})
 
 test("Async computed values get computed", t => {
   t.plan(4)
@@ -145,4 +148,21 @@ test("Having only sync computed data still works", t => {
     t.equal(val, 3)
   })
   vm.x++
+})
+
+test("Handle errors in computed properties", t => {
+  t.plan(4)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        return Promise.reject("error")
+      }
+    }
+  })
+  t.equal(vm.a, null)
+  t.equal(testErrorLog.length, 0)
+  Vue.nextTick(() => {
+    t.equal(vm.a, null)
+    t.equal(testErrorLog.length, 1)
+  })
 })
