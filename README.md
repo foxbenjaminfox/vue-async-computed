@@ -45,6 +45,11 @@ new Vue({
     username: {
       // Using vue-resource
       return Vue.http.get('/get-username-by-id', { id: this.userId })
+        // Assuming the endpoint return JSON along the lines of
+        // { 
+        //   "username": "username-goes-here"
+        // }
+        .then(response => response.data.username)
     }
   }
 }
@@ -60,6 +65,7 @@ new Vue({
   asyncComputed: {
     username: {
       return Vue.http.get('/get-username-by-id', { id: this.userId })
+        .then(response => response.data.username)
     }
   }
 }
