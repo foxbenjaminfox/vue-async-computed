@@ -45,7 +45,8 @@ new Vue({
     username: {
       // Using vue-resource
       return Vue.http.get('/get-username-by-id', { id: this.userId })
-        // Assuming the endpoint return JSON along the lines of
+        // This assumes that this endpoint will send us a response
+        // that contains something like this:
         // { 
         //   "username": "username-goes-here"
         // }
