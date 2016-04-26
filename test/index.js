@@ -166,3 +166,34 @@ test("Handle errors in computed properties", t => {
     t.equal(testErrorLog.length, 1)
   })
 })
+
+
+test("Handle multiple asyncComputed objects the same way normal as \
+    normal computed property objects", t => {
+  t.plan(3)
+  const vm = new Vue({
+    mixins: [{
+      asyncComputed: {
+        a () {
+          return Promise.resolve('mixin-a')
+        },
+        b () {
+          return Promise.resolve('mixin-b')
+        }
+      }
+    }],
+    asyncComputed: {
+      a () {
+          return Promise.resolve('vm-a')
+      },
+      c () {
+          return Promise.resolve('vm-c')
+      }
+    }
+  })
+  Vue.nextTick(() => {
+    t.equal(vm.a, 'vm-a')
+    t.equal(vm.b, 'mixin-b')
+    t.equal(vm.c, 'vm-c')
+  })
+})

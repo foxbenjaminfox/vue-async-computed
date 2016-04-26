@@ -4,6 +4,10 @@ export default {
   install (Vue, options) {
     options = options || {}
 
+    Vue.config
+      .optionMergeStrategies
+      .asyncComputed = Vue.config.optionMergeStrategies.computed
+
     Vue.mixin({
       created () {
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
