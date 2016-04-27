@@ -31,7 +31,11 @@
     "url": "git+https://github.com/foxbenjaminfox/vue-async-computed.git"
   },
   "keywords": [
-    "vue async computed data"
+    "vue",
+    "data",
+    "async",
+    "computed",
+    "computed data"
   ],
   "author": "Benjamin Fox <foxbenjaminfox@gmail.com>",
   "license": "MIT",
