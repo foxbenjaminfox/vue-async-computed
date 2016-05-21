@@ -14,7 +14,7 @@ export default {
           const fn = this.$options.asyncComputed[key]
           if (!this.$options.computed) this.$options.computed = {}
           Vue.set(this.$options.computed, prefix + key, fn)
-          Vue.set(this.$data, key, null)
+          Vue.set(this, key, null)
         })
 
         this._initComputed()
