@@ -2,11 +2,15 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v1.4.0](#v140)
 - [v1.2.0](#v120)
 - [v1.1.0](#v110)
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v1.4.0
+  * Add CommonJS support
 
 ### v1.2.0
   * Use the same strategy to merge `asyncComputed` objects as regular `computed` objects.
