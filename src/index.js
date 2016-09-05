@@ -32,7 +32,7 @@ export default {
               if (options.errorHandler === false) return
 
               const handler = (options.errorHandler === undefined)
-                ?  console.error.bind(console, 'Error evaluating async computed property:')
+                ? console.error.bind(console, 'Error evaluating async computed property:')
                 : options.errorHandler
 
               handler(err.stack)

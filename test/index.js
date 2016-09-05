@@ -31,7 +31,6 @@ test("Async computed values get computed", t => {
   vm.$watch('b', function (val) {
     t.equal(val, 1337)
   })
-
 })
 
 test("Computed value being an already resolved promise updates at the next tick", t => {
@@ -86,7 +85,7 @@ test("Recalculated async value is properly recalculated", t => {
       b () {
         return new Promise(resolve => {
           setTimeout(() => resolve('done'), 40)
-          })
+        })
       }
     },
     data: {
@@ -125,7 +124,7 @@ test("Old async value is invalidated", t => {
     }
   })
   t.equal(vm.a, null)
-  setTimeout(() => vm.waitTime = 10, 10)
+  setTimeout(() => { vm.waitTime = 10 }, 10)
   vm.$watch('a', function (val) {
     t.equal(val, 10) // Not 40, even though we don't cancel the $watch
   })
@@ -167,9 +166,8 @@ test("Handle errors in computed properties", t => {
   })
 })
 
-
 test("Handle multiple asyncComputed objects the same way normal as \
-    normal computed property objects", t => {
+normal computed property objects", t => {
   t.plan(3)
   const vm = new Vue({
     mixins: [{
@@ -184,10 +182,10 @@ test("Handle multiple asyncComputed objects the same way normal as \
     }],
     asyncComputed: {
       a () {
-          return Promise.resolve('vm-a')
+        return Promise.resolve('vm-a')
       },
       c () {
-          return Promise.resolve('vm-c')
+        return Promise.resolve('vm-c')
       }
     }
   })

@@ -1,9 +1,14 @@
 {
   "parser": "babel-eslint",
+  "extends": "standard",
   "env": {
     "node": true,
     "es6": true
   },
   "rules": {
+    "arrow-parens": 0,
+    "quotes": 0,
+    "no-multi-str": 0,
+    "comma-dangle": [2, "only-multiline"]
   }
 }
