@@ -9,16 +9,29 @@ export default {
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
     Vue.mixin({
-      created () {
+      beforeCreate () {
+        const optionData = this.$options.data
+        const newData = {}
+
+        if (!this.$options.computed) this.$options.computed = {}
+
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
           const fn = this.$options.asyncComputed[key]
-          if (!this.$options.computed) this.$options.computed = {}
-          Vue.set(this.$options.computed, prefix + key, fn)
-          Vue.set(this, key, null)
+          this.$options.computed[prefix + key] = fn
+          newData[key] = null
         })
 
-        this._initComputed()
-
+        this.$options.data = function vueAsyncComputedInjectedDataFn () {
+          const data = (
+              (typeof optionData === 'function')
+                ? optionData.call(this)
+                : optionData
+             ) || {}
+          Object.keys(newData).forEach(key => { data[key] = newData[key] })
+          return data
+        }
+      },
+      created () {
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
           let promiseId = 0
           this.$watch(prefix + key, newPromise => {
