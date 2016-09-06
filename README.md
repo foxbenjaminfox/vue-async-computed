@@ -44,7 +44,7 @@ new Vue({
   computed: {
     username: {
       // Using vue-resource
-      return Vue.http.get('/get-username-by-id', { id: this.userId })
+      return Vue.http.get('/get-username-by-id/' + this.userId)
         // This assumes that this endpoint will send us a response
         // that contains something like this:
         // { 
@@ -65,7 +65,7 @@ new Vue({
   },
   asyncComputed: {
     username: {
-      return Vue.http.get('/get-username-by-id', { id: this.userId })
+      return Vue.http.get('/get-username-by-id/' + this.userId)
         .then(response => response.data.username)
     }
   }
@@ -100,18 +100,19 @@ import AsyncComputed from 'vue-async-computed'
 /* Initialize the plugin */
 Vue.use(AsyncComputed)
 
-/* Then, when you create a Vue instance (or component),
+/*
+   Then, when you create a Vue instance (or component),
    you can pass an object named "asyncComputed" as well as
-   or instead of one named "computed". The functions you pass
-   to "asyncComputed" should return promises, and the values
-   those promises resolve to are then asynchronously bound to
-   the Vue instance as the promises resolve. Just like with
-   normal computed properties, if the data the property depends
-   on changes then the property is re-run automatically.
+   or instead of the standard "computed" option. The functions
+   you pass to "asyncComputed" should return promises, and the values
+   those promises resolve to are then asynchronously bound to the
+   Vue instance as they resolve. Just as with normal computed
+   properties, if the data the property depends on changes
+   then the property is re-run automatically.
    
    You can almost completely ignore the fact that behind the
    scenes they are asynchronous. The one thing to remember is
-   that until a asynchronously property's promise resolves
+   that until a asynchronous property's promise resolves
    for the first time, the value of the computed property is null.
 */
 
@@ -130,10 +131,11 @@ const vm = new Vue({
   }
 })
 
-/* Until one second has passed, vm.sum will be null.
-   After that, vm.sum will be 5. If you change vm.x or vm.y,
-   one second later vm.sum will automatically update itself to be
-   the sum of what you set vm.x and vm.y to be a second before. 
+/*
+   Until one second has passed, vm.sum will be null.  After that,
+   vm.sum will be 5. If you change vm.x or vm.y, then one
+   second later vm.sum will automatically update itself to be
+   the sum of the values to which you set vm.x and vm.y the previous second.
 */
 ````
 
@@ -146,11 +148,13 @@ If you want to use a custom logging function, the plugin takes an `errorHandler`
 For example: 
 
 ````js
-Vue.use(AsyncComputed, { errorHandler: function (msg) {
-  console.log('Hey, an error!')
-  console.log('---')
-  console.log(msg)
-})
+Vue.use(AsyncComputed, {
+  errorHandler (msg) {
+    console.log('Hey, an error!')
+    console.log('---')
+    console.log(msg)
+  }
+)
 ````
 
 You can pass `false` in order to silently ignore rejected promises.
