@@ -32,6 +32,8 @@
   </a>
 </p>
 
+**Note: This is the Vue 2.0 compatible release candidate. For the stable version, see the [master](https://github.com/foxbenjaminfox/vue-async-computed/tree/master) branch. This version is tagged `next` on npm. If you want to try out this release candidate, install it with `npm install vue-async-computed@next`.**
+
 With this plugin, you can have have computed properties in Vue that are computed asynchronously.
 
 Without using this plugin, you can't do this:
@@ -89,7 +91,7 @@ new Vue({
 ## Install
 
 ````sh
-npm install --save vue-async-computed
+npm install --save vue-async-computed@next
 ````
 
 ## Usage example
