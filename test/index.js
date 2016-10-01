@@ -160,10 +160,14 @@ test("Handle errors in computed properties", t => {
   })
   t.equal(vm.a, null)
   t.equal(testErrorLog.length, 0)
-  Vue.nextTick(() => {
-    t.equal(vm.a, null)
-    t.equal(testErrorLog.length, 1)
-  })
+  Vue.nextTick(() =>
+    // In Vue 2.0 it takes an additional tick before
+    // we see the error
+    Vue.nextTick(() => {
+      t.equal(vm.a, null)
+      t.equal(testErrorLog.length, 1)
+    })
+  )
 })
 
 test("Handle multiple asyncComputed objects the same way normal as \
