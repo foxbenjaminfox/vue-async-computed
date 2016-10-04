@@ -91,7 +91,7 @@ new Vue({
 ## Install
 
 ````sh
-npm install --save vue-async-computed@next
+npm install --save vue-async-computed
 ````
 
 ## Usage example
