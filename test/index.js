@@ -2,9 +2,14 @@ import test from "tape"
 import AsyncComputed from "../src"
 import Vue from 'vue'
 
-const testErrorLog = []
+let baseErrorCallback = () => {
+  throw new Error('Unexpected error thrown')
+}
+
+let testErrorCallback = baseErrorCallback
+
 Vue.use(AsyncComputed, {
-  errorHandler: msg => testErrorLog.push(msg)
+  errorHandler: msg => testErrorCallback(msg)
 })
 
 test("Async computed values get computed", t => {
@@ -150,7 +155,7 @@ test("Having only sync computed data still works", t => {
 })
 
 test("Handle errors in computed properties", t => {
-  t.plan(4)
+  t.plan(2)
   const vm = new Vue({
     asyncComputed: {
       a () {
@@ -159,15 +164,10 @@ test("Handle errors in computed properties", t => {
     }
   })
   t.equal(vm.a, null)
-  t.equal(testErrorLog.length, 0)
-  Vue.nextTick(() =>
-    // In Vue 2.0 it takes an additional tick before
-    // we see the error
-    Vue.nextTick(() => {
-      t.equal(vm.a, null)
-      t.equal(testErrorLog.length, 1)
-    })
-  )
+  testErrorCallback = msg => {
+    t.equal(vm.a, null)
+    testErrorCallback = baseErrorCallback
+  }
 })
 
 test("Handle multiple asyncComputed objects the same way normal as \
