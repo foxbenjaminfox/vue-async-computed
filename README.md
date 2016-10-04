@@ -125,9 +125,9 @@ const vm = new Vue({
   },
   asyncComputed: {
     sum () {
-      const sum = this.x + this.y
+      const total = this.x + this.y
       return new Promise(resolve =>
-        setTimeout(() => resolve(sum), 1000)
+        setTimeout(() => resolve(total), 1000)
       )
     }
   }
