@@ -199,3 +199,33 @@ normal computed property objects", t => {
     t.equal(vm.c, 'vm-c')
   })
 })
+
+test("Async computed values can have defaults", t => {
+  t.plan(6)
+  const vm = new Vue({
+    asyncComputed: {
+      x: {
+        default: false,
+        get () {
+          return Promise.resolve(true)
+        }
+      },
+      y () {
+        return Promise.resolve(true)
+      },
+      z: {
+        get () {
+          return Promise.resolve(true)
+        }
+      }
+    }
+  })
+  t.equal(vm.x, false, 'x should default to true')
+  t.equal(vm.y, null, 'y doesn\'t have a default')
+  t.equal(vm.z, null, 'z doesn\'t have a default despite being defined with an object')
+  Vue.nextTick(() => {
+    t.equal(vm.x, true, 'x resolves to true')
+    t.equal(vm.y, true, 'y resolves to true')
+    t.equal(vm.z, true, 'z resolves to true')
+  })
+})

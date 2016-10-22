@@ -17,8 +17,11 @@ export default {
 
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
           const fn = this.$options.asyncComputed[key]
-          this.$options.computed[prefix + key] = fn
-          newData[key] = null
+          const get = typeof fn === 'function' ? fn : fn.get,
+                def = typeof fn.default === 'undefined' ? null : fn.default
+
+          this.$options.computed[prefix + key] = get
+          newData[key] = def
         })
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
