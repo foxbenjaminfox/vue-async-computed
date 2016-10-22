@@ -44,7 +44,7 @@ new Vue({
     userId: 1
   },
   computed: {
-    username: {
+    username () {
       // Using vue-resource
       return Vue.http.get('/get-username-by-id/' + this.userId)
         // This assumes that this endpoint will send us a response
@@ -66,7 +66,7 @@ new Vue({
     userId: 1
   },
   asyncComputed: {
-    username: {
+    username () {
       return Vue.http.get('/get-username-by-id/' + this.userId)
         .then(response => response.data.username)
     }
