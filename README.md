@@ -141,6 +141,37 @@ const vm = new Vue({
 */
 ````
 
+[Like with regular synchronous computed properties](https://vuejs.org/guide/computed.html#Computed-Setter), you can pass an object
+with a `get` method instead of a function, but unlike regular computed
+properties, async computed properties are always getter-only. If the
+object provided has a `set` method it will be ignored.
+
+Async computed properties can also have a custom default value, which will
+be used until the data is loaded for the first time:
+
+````js
+new Vue({
+  data: {
+    postId: 1
+  },
+  asyncComputed: {
+    blogPostContent: {
+      read () {
+        return Vue.http.get('/post/' + this.postId)
+          .then(response => response.data.postContent)
+       },
+       default: 'Loading...'
+    }
+  }
+}
+
+/*
+   Now you can display {{blogPostContent}} in your template, which
+   will show a loading message until the blog post's content arrives
+   from the server.
+*/
+````
+
 ## Options
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.

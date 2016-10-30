@@ -2,7 +2,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
-- [2.0.0](#200)
+- [v2.1.0](#v210)
+- [v2.0.0](#v200)
 - [v1.4.0](#v140)
 - [v1.2.0](#v120)
 - [v1.1.0](#v110)
@@ -10,7 +11,11 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-### 2.0.0
+### v2.1.0
+  * Allow object syntax for defining computed properties.
+  * Enable custom default values
+
+### v2.0.0
   * Now compatible with Vue 2.0
 
 ### v1.4.0
