@@ -1,8 +1,13 @@
 const prefix = '_async_computed$'
 
-export default {
+let installed = false
+
+const AsyncComputed = {
   install (Vue, options) {
     options = options || {}
+
+    if (installed) return
+    installed = true
 
     Vue.config
       .optionMergeStrategies
@@ -58,4 +63,11 @@ export default {
       }
     })
   }
+}
+
+export default AsyncComputed
+
+// Auto install in dist mode
+if (typeof window !== 'undefined' && window.Vue) {
+  window.Vue.use(AsyncComputed)
 }

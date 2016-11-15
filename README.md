@@ -94,6 +94,28 @@ new Vue({
 npm install --save vue-async-computed
 ````
 
+Alternately, you can link it directly from a CDN:
+
+````html
+<script src="https://unpkg.com/vue-async-computed"></script>
+<!-- 
+  That will always point to the latest version of vue-async-computed.
+  You probably want to instead pin it to a specific version:
+-->
+<script src="https://unpkg.com/vue-async-computed@2.1.1"></script>
+````
+
+When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
+
+````js
+import Vue from 'vue'
+import AsyncComputed from 'vue-async-computed'
+
+Vue.use(AsyncComputed)
+````
+
+You don't need to do this when using global script tags. So long as you include `vue-async-computed` in a script tag after Vue itself, it will be installed automatically.
+
 ## Usage example
 
 ````js
