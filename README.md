@@ -178,10 +178,16 @@ new Vue({
   },
   asyncComputed: {
     blogPostContent: {
+      // The `get` function is the same as the function you would
+      // pass directly as the value to `blogPostContent` if you
+      // didn't need to specify a default value.
       get () {
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
        },
+       // The computed proporty `blogPostContent` will have 
+       // the value 'Loading...' until the first time the promise
+       // returned from the `get` function resolves.
        default: 'Loading...'
     }
   }
