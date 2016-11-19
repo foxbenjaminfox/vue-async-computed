@@ -178,7 +178,7 @@ new Vue({
   },
   asyncComputed: {
     blogPostContent: {
-      read () {
+      get () {
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
        },
