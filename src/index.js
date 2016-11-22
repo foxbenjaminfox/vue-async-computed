@@ -1,13 +1,8 @@
 const prefix = '_async_computed$'
 
-let installed = false
-
 const AsyncComputed = {
   install (Vue, options) {
     options = options || {}
-
-    if (installed) return
-    installed = true
 
     Vue.config
       .optionMergeStrategies
