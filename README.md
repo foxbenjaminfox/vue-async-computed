@@ -204,21 +204,33 @@ new Vue({
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
 
-If you want to use a custom logging function, the plugin takes an `errorHandler` option, which should be the function you want called with the error information.
+If you want to use a custom logging function, the plugin takes an `errorHandler` option, which should be the function you want called with the error information. By default, it will be called with the error's stack trace as an argument, but if you want the raw error itself you can set the
+`useRawError` option to `true`.
 
 For example: 
 
 ````js
 Vue.use(AsyncComputed, {
-  errorHandler (msg) {
+  errorHandler (stack) {
     console.log('Hey, an error!')
     console.log('---')
-    console.log(msg)
+    console.log(stack)
+  }
+)
+
+// Or with `useRawError`:
+Vue.use(AsyncComputed, {
+  useRawError: true,
+  errorHandler (err) {
+    console.log('An error occurred!')
+    console.log('The error message was: ' + err.msg)
+    console.log('And the stack trace was:')
+    console.log(err.stack)
   }
 )
 ````
 
-You can pass `false` in order to silently ignore rejected promises.
+You can pass `false` as the `errorHandler` in order to silently ignore rejected promises.
 
 ## License
 

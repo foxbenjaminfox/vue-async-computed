@@ -9,6 +9,7 @@ let baseErrorCallback = () => {
 let testErrorCallback = baseErrorCallback
 
 Vue.use(AsyncComputed, {
+  useRawError: true,
   errorHandler: msg => testErrorCallback(msg)
 })
 
@@ -155,17 +156,18 @@ test("Having only sync computed data still works", t => {
 })
 
 test("Handle errors in computed properties", t => {
-  t.plan(2)
+  t.plan(3)
   const vm = new Vue({
     asyncComputed: {
       a () {
-        return Promise.reject("error")
+        return Promise.reject('error')
       }
     }
   })
   t.equal(vm.a, null)
-  testErrorCallback = msg => {
+  testErrorCallback = err => {
     t.equal(vm.a, null)
+    t.equal(err, 'error')
     testErrorCallback = baseErrorCallback
   }
 })

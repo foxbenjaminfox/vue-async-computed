@@ -51,7 +51,11 @@ const AsyncComputed = {
                 ? console.error.bind(console, 'Error evaluating async computed property:')
                 : options.errorHandler
 
-              handler(err.stack)
+              if (options.useRawError) {
+                handler(err)
+              } else {
+                handler(err.stack)
+              }
             })
           }, { immediate: true })
         })
