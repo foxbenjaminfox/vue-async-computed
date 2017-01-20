@@ -11,17 +11,14 @@ const AsyncComputed = {
     Vue.mixin({
       beforeCreate () {
         const optionData = this.$options.data
-        const newData = {}
 
         if (!this.$options.computed) this.$options.computed = {}
 
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
-          const fn = this.$options.asyncComputed[key]
-          const get = typeof fn === 'function' ? fn : fn.get,
-                def = typeof fn.default === 'undefined' ? null : fn.default
+          const fn = this.$options.asyncComputed[key],
+                get = typeof fn === 'function' ? fn : fn.get
 
           this.$options.computed[prefix + key] = get
-          newData[key] = def
         })
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
@@ -30,11 +27,24 @@ const AsyncComputed = {
                 ? optionData.call(this)
                 : optionData
              ) || {}
-          Object.keys(newData).forEach(key => { data[key] = newData[key] })
+          Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+            data[key] = null
+          })
           return data
         }
       },
       created () {
+        Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+          const fn = this.$options.asyncComputed[key],
+                def = typeof fn.default === 'undefined' ? null : fn.default
+
+          if (typeof def === 'function') {
+            this[key] = def.call(this)
+          } else {
+            this[key] = def
+          }
+        })
+
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
           let promiseId = 0
           this.$watch(prefix + key, newPromise => {

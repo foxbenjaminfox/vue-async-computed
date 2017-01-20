@@ -231,3 +231,32 @@ test("Async computed values can have defaults", t => {
     t.equal(vm.z, true, 'z resolves to true')
   })
 })
+
+test("Default values can be functions", t => {
+  t.plan(4)
+  const vm = new Vue({
+    data: {
+      x: 1
+    },
+    asyncComputed: {
+      y: {
+        default () { return 2 },
+        get () {
+          return Promise.resolve(3)
+        }
+      },
+      z: {
+        default () { return this.x },
+        get () {
+          return Promise.resolve(4)
+        }
+      }
+    }
+  })
+  t.equal(vm.y, 2)
+  t.equal(vm.z, 1)
+  Vue.nextTick(() => {
+    t.equal(vm.y, 3)
+    t.equal(vm.z, 4)
+  })
+})

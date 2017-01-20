@@ -200,6 +200,28 @@ new Vue({
 */
 ````
 
+You can instead define the default value as a function, in order to depend on
+props or on data:
+
+````js
+new Vue({
+  data: {
+    postId: 1
+  },
+  asyncComputed: {
+    blogPostContent: {
+      get () {
+        return Vue.http.get('/post/' + this.postId)
+          .then(response => response.data.postContent)
+       },
+       default () {
+         return 'Loading post ' + this.postId
+       }
+    }
+  }
+}
+````
+
 ## Options
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.

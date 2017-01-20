@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.0.0](#v300)
 - [v2.1.1](#v211)
 - [v2.1.0](#v210)
 - [v2.0.0](#v200)
@@ -11,6 +12,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.0.0
+  * Pass the raw error to the error handler when passed the `useRawError` option.
+  * Allow default values to be given as functions.
 
 ### v2.1.1
   * Automatic installation when used in a script tag.
