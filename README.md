@@ -32,8 +32,6 @@
   </a>
 </p>
 
-**This plugin is now Vue 2.0 compatible!**
-
 With this plugin, you can have have computed properties in Vue that are computed asynchronously.
 
 Without using this plugin, you can't do this:
