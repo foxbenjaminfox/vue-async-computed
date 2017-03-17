@@ -260,3 +260,35 @@ test("Default values can be functions", t => {
     t.equal(vm.z, 4)
   })
 })
+
+test("The computed value can be written to, and then will be properly overridden", t => {
+  t.plan(5)
+  const vm = new Vue({
+    data: {
+      x: 1
+    },
+    asyncComputed: {
+      y () {
+        this.y = this.x + 1
+        return new Promise(resolve => {
+          setTimeout(() => resolve(this.x), 10)
+        })
+      }
+    }
+  })
+  Vue.nextTick(() => {
+    t.equal(vm.y, 2)
+    const unwatch = vm.$watch('y', function (val) {
+      t.equal(val, 1)
+      unwatch()
+      vm.x = 4
+      t.equal(vm.y, 1)
+      Vue.nextTick(() => {
+        t.equal(vm.y, 5)
+        vm.$watch('y', function (val) {
+          t.equal(val, 4)
+        })
+      })
+    })
+  })
+})
