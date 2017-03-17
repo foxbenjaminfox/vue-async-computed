@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.0.1](#v301)
 - [v3.0.0](#v300)
 - [v2.1.1](#v211)
 - [v2.1.0](#v210)
@@ -12,6 +13,9 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.0.1
+  * More test cases
 
 ### v3.0.0
   * Pass the raw error to the error handler when passed the `useRawError` option.
