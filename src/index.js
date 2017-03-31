@@ -21,7 +21,7 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = get
         })
 
-        this.$options.data = function vueAsyncComputedInjectedDataFn () {
+        this.$options.data = () => {
           const data = (
               (typeof optionData === 'function')
                 ? optionData.call(this)
