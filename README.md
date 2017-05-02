@@ -102,7 +102,7 @@ Alternately, you can link it directly from a CDN:
   That will always point to the latest version of vue-async-computed.
   You probably want to instead pin it to a specific version:
 -->
-<script src="https://unpkg.com/vue-async-computed@2.2.1"></script>
+<script src="https://unpkg.com/vue-async-computed@3.1.0"></script>
 ````
 
 When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
