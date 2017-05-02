@@ -14,9 +14,9 @@ const AsyncComputed = {
 
         if (!this.$options.computed) this.$options.computed = {}
 
-        Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+        for (const key in this.$options.asyncComputed || {}) {
           this.$options.computed[prefix + key] = getterFor(this.$options.asyncComputed[key])
-        })
+        }
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
           const data = (
@@ -24,18 +24,18 @@ const AsyncComputed = {
                 ? optionData.call(this)
                 : optionData
              ) || {}
-          Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+          for (const key in this.$options.asyncComputed || {}) {
             data[key] = null
-          })
+          }
           return data
         }
       },
       created () {
-        Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+        for (const key in this.$options.asyncComputed || {}) {
           this[key] = defaultFor.call(this, this.$options.asyncComputed[key], pluginOptions)
-        })
+        }
 
-        Object.keys(this.$options.asyncComputed || {}).forEach(key => {
+        for (const key in this.$options.asyncComputed || {}) {
           let promiseId = 0
           this.$watch(prefix + key, newPromise => {
             const thisPromise = ++promiseId
@@ -63,7 +63,7 @@ const AsyncComputed = {
               }
             })
           }, { immediate: true })
-        })
+        }
       }
     })
   }

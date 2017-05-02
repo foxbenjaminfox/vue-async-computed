@@ -396,3 +396,20 @@ test("Handle an async computed value returning synchronously", t => {
     t.equal(vm.x, 1)
   })
 })
+
+test("Work correctly with Vue.extend", t => {
+  t.plan(2)
+  const SubVue = Vue.extend({
+    asyncComputed: {
+      async x () {
+        return 1
+      }
+    }
+  })
+  const vm = new SubVue({})
+
+  t.equal(vm.x, null)
+  Vue.nextTick(() => {
+    t.equal(vm.x, 1)
+  })
+})

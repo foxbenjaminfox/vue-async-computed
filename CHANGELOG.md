@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.1.1](#v311)
 - [v3.1.0](#v310)
 - [v3.0.1](#v301)
 - [v3.0.0](#v300)
@@ -14,6 +15,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.1.1
+  * Fix bug where `vue-async-computed` wouldn't find async computed
+    properties that were further up the prototype chain.
 
 ### v3.1.0
   * Add option for setting a global default value
