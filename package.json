@@ -1,6 +1,6 @@
 {
   "name": "vue-async-computed",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Async computed properties for Vue",
   "main": "dist/index.js",
   "files": [
