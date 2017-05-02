@@ -401,8 +401,8 @@ test("Work correctly with Vue.extend", t => {
   t.plan(2)
   const SubVue = Vue.extend({
     asyncComputed: {
-      async x () {
-        return 1
+      x () {
+        return Promise.resolve(1)
       }
     }
   })
