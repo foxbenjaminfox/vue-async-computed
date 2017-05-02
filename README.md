@@ -222,7 +222,15 @@ new Vue({
 }
 ````
 
-## Options
+You can also set a custom global default value in the options passed to `Vue.use`:
+
+````javascript
+Vue.use(AsyncComputed, {
+  default: 'Global default value'
+})
+````
+
+## Error handling
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
 

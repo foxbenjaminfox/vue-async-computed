@@ -1,8 +1,8 @@
 const prefix = '_async_computed$'
 
 const AsyncComputed = {
-  install (Vue, options) {
-    options = options || {}
+  install (Vue, pluginOptions) {
+    pluginOptions = pluginOptions || {}
 
     Vue.config
       .optionMergeStrategies
@@ -15,10 +15,7 @@ const AsyncComputed = {
         if (!this.$options.computed) this.$options.computed = {}
 
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
-          const fn = this.$options.asyncComputed[key],
-                get = typeof fn === 'function' ? fn : fn.get
-
-          this.$options.computed[prefix + key] = get
+          this.$options.computed[prefix + key] = getterFor(this.$options.asyncComputed[key])
         })
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
@@ -35,14 +32,7 @@ const AsyncComputed = {
       },
       created () {
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
-          const fn = this.$options.asyncComputed[key],
-                def = typeof fn.default === 'undefined' ? null : fn.default
-
-          if (typeof def === 'function') {
-            this[key] = def.call(this)
-          } else {
-            this[key] = def
-          }
+          this[key] = defaultFor.call(this, this.$options.asyncComputed[key], pluginOptions)
         })
 
         Object.keys(this.$options.asyncComputed || {}).forEach(key => {
@@ -55,13 +45,13 @@ const AsyncComputed = {
             }).catch(err => {
               if (thisPromise !== promiseId) return
 
-              if (options.errorHandler === false) return
+              if (pluginOptions.errorHandler === false) return
 
-              const handler = (options.errorHandler === undefined)
+              const handler = (pluginOptions.errorHandler === undefined)
                 ? console.error.bind(console, 'Error evaluating async computed property:')
-                : options.errorHandler
+                : pluginOptions.errorHandler
 
-              if (options.useRawError) {
+              if (pluginOptions.useRawError) {
                 handler(err)
               } else {
                 handler(err.stack)
@@ -74,9 +64,40 @@ const AsyncComputed = {
   }
 }
 
+function getterFor (fn) {
+  if (typeof fn === 'function') return fn
+
+  let getter = fn.get
+
+  if (fn.watch) {
+    getter = function getter () {
+      fn.watch.call(this)
+      return fn.get(this)
+    }
+  }
+  return getter
+}
+
+function defaultFor (fn, pluginOptions) {
+  let defaultValue = null
+
+  if ('default' in fn) {
+    defaultValue = fn.default
+  } else if ('default' in pluginOptions) {
+    defaultValue = pluginOptions.default
+  }
+
+  if (typeof defaultValue === 'function') {
+    return defaultValue.call(this)
+  } else {
+    return defaultValue
+  }
+}
+
 export default AsyncComputed
 
-// Auto install in dist mode
+/* istanbul ignore if */
 if (typeof window !== 'undefined' && window.Vue) {
+  // Auto install in dist mode
   window.Vue.use(AsyncComputed)
 }

@@ -292,3 +292,38 @@ test("The computed value can be written to, and then will be properly overridden
     })
   })
 })
+
+test("The default default value can be set in the plugin options", t => {
+  t.plan(2)
+  pluginOptions.default = 53
+  const vm = new Vue({
+    asyncComputed: {
+      x () {
+        return Promise.resolve(0)
+      }
+    }
+  })
+  t.equal(vm.x, 53)
+  Vue.nextTick(() => {
+    t.equal(vm.x, 0)
+    delete pluginOptions.default
+  })
+})
+
+test("The default default value can be set in the plugin options to undefined", t => {
+  t.plan(2)
+  pluginOptions.default = undefined
+  const vm = new Vue({
+    asyncComputed: {
+      x () {
+        return Promise.resolve(0)
+      }
+    }
+  })
+  t.equal(vm.x, undefined)
+  Vue.nextTick(() => {
+    t.equal(vm.x, 0)
+    delete pluginOptions.default
+  })
+})
+
