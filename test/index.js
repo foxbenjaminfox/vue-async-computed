@@ -6,12 +6,11 @@ let baseErrorCallback = () => {
   throw new Error('Unexpected error thrown')
 }
 
-let testErrorCallback = baseErrorCallback
+const pluginOptions = {
+  errorHandler: msg => baseErrorCallback(msg),
+}
 
-Vue.use(AsyncComputed, {
-  useRawError: true,
-  errorHandler: msg => testErrorCallback(msg)
-})
+Vue.use(AsyncComputed, pluginOptions)
 
 test("Async computed values get computed", t => {
   t.plan(4)
@@ -160,15 +159,34 @@ test("Handle errors in computed properties", t => {
   const vm = new Vue({
     asyncComputed: {
       a () {
+        return Promise.reject(new Error('error'))
+      }
+    }
+  })
+  t.equal(vm.a, null)
+  pluginOptions.errorHandler = stack => {
+    t.equal(vm.a, null)
+    t.equal(stack.slice(0, 13), 'Error: error\n')
+    pluginOptions.errorHandler = baseErrorCallback
+  }
+})
+
+test("Handle errors in computed properties, with useRawError", t => {
+  pluginOptions.useRawError = true
+  t.plan(3)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
         return Promise.reject('error')
       }
     }
   })
   t.equal(vm.a, null)
-  testErrorCallback = err => {
+  pluginOptions.errorHandler = err => {
     t.equal(vm.a, null)
     t.equal(err, 'error')
-    testErrorCallback = baseErrorCallback
+    pluginOptions.errorHandler = baseErrorCallback
+    pluginOptions.useRawError = false
   }
 })
 
@@ -288,6 +306,43 @@ test("The computed value can be written to, and then will be properly overridden
         vm.$watch('y', function (val) {
           t.equal(val, 4)
         })
+      })
+    })
+  })
+})
+
+test("Watchers rerun the computation when a value changes", t => {
+  t.plan(4)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      x: 0,
+    },
+    asyncComputed: {
+      y: {
+        get () {
+          return Promise.resolve(i)
+        },
+        watch () {
+          this.x
+        }
+      }
+    }
+  })
+  t.equal(vm.y, null)
+  Vue.nextTick(() => {
+    t.equal(vm.y, 0)
+    i++
+    vm.x--
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter functin
+      t.equal(vm.y, 0)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and y is 1.
+        t.equal(vm.y, 1)
       })
     })
   })
