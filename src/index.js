@@ -39,6 +39,11 @@ const AsyncComputed = {
           let promiseId = 0
           this.$watch(prefix + key, newPromise => {
             const thisPromise = ++promiseId
+
+            if (!newPromise || !newPromise.then) {
+              newPromise = Promise.resolve(newPromise)
+            }
+
             newPromise.then(value => {
               if (thisPromise !== promiseId) return
               this[key] = value

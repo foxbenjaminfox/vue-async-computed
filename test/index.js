@@ -327,3 +327,17 @@ test("The default default value can be set in the plugin options to undefined", 
   })
 })
 
+test("Handle an async computed value returning synchronously", t => {
+  t.plan(2)
+  const vm = new Vue({
+    asyncComputed: {
+      x () {
+        return 1
+      }
+    }
+  })
+  t.equal(vm.x, null)
+  Vue.nextTick(() => {
+    t.equal(vm.x, 1)
+  })
+})
