@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.1.3](#v313)
 - [v3.1.1](#v311)
 - [v3.1.0](#v310)
 - [v3.0.1](#v301)
@@ -15,6 +16,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.1.3
+  * Fix a bug where extra properties on `Object.prototype` would be
+    considered relevent to `vue-async-computed`.
 
 ### v3.1.1
   * Fix bug where `vue-async-computed` wouldn't find async computed
