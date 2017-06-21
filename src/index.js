@@ -77,7 +77,7 @@ function getterFor (fn) {
   if (fn.hasOwnProperty('watch')) {
     getter = function getter () {
       fn.watch.call(this)
-      return fn.get(this)
+      return fn.get.call(this)
     }
   }
   return getter
