@@ -230,6 +230,39 @@ Vue.use(AsyncComputed, {
 })
 ````
 
+## Recalculation
+
+Just like normal computed properties, async computed properties keep track of their dependencies, and are only
+recalculated if those dependencies change. But often you'll have an async computed property you'll want to run again
+without any of its (local) dependencies changing, such as for instance the data may have changed in the database.
+
+You can set up a `watch` function, whose purpose is to set up listeners on additinal dependencies. Your async computed
+property will then be recalculated also if any of the watched dependencies change, in addition to the real dependencies
+the property itself has:
+````js
+
+new Vue({
+  data: {
+    postId: 1,
+    timesPostHasBeenUpdated: 0
+  },
+  asyncComputed: {
+    // blogPostContent will update its contents if postId is changed
+    // to point to a diffrent post, but will also refetch the post's
+    // contents when you increment timesPostHasBeenUpdated.
+    blogPostContent: {
+      get () {
+        return Vue.http.get('/post/' + this.postId)
+          .then(response => response.data.postContent)
+      },
+      watch () {
+        this.timesPostHasBeenUpdated
+      }
+    }
+  }
+}
+````
+
 ## Error handling
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
