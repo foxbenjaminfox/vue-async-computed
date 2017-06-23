@@ -317,11 +317,12 @@ test("Watchers rerun the computation when a value changes", t => {
   const vm = new Vue({
     data: {
       x: 0,
+      y: 2,
     },
     asyncComputed: {
-      y: {
+      z: {
         get () {
-          return Promise.resolve(i)
+          return Promise.resolve(i + this.y)
         },
         watch () {
           this.x
@@ -329,20 +330,20 @@ test("Watchers rerun the computation when a value changes", t => {
       }
     }
   })
-  t.equal(vm.y, null)
+  t.equal(vm.z, null)
   Vue.nextTick(() => {
-    t.equal(vm.y, 0)
+    t.equal(vm.z, 2)
     i++
     vm.x--
     Vue.nextTick(() => {
       // This tick, Vue registers the change
       // in the watcher, and reevaluates
       // the getter functin
-      t.equal(vm.y, 0)
+      t.equal(vm.z, 2)
       Vue.nextTick(() => {
         // Now in this tick the promise has
-        // resolved, and y is 1.
-        t.equal(vm.y, 1)
+        // resolved, and z is 3.
+        t.equal(vm.z, 3)
       })
     })
   })
