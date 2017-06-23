@@ -213,10 +213,10 @@ new Vue({
       get () {
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
-       },
-       default () {
-         return 'Loading post ' + this.postId
-       }
+      },
+      default () {
+        return 'Loading post ' + this.postId
+      }
     }
   }
 }
