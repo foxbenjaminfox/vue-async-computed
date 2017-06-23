@@ -20,10 +20,10 @@ const AsyncComputed = {
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
           const data = (
-              (typeof optionData === 'function')
-                ? optionData.call(this)
-                : optionData
-             ) || {}
+            (typeof optionData === 'function')
+              ? optionData.call(this)
+              : optionData
+          ) || {}
           for (const key in this.$options.asyncComputed || {}) {
             data[key] = null
           }

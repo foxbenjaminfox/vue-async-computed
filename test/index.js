@@ -177,6 +177,7 @@ test("Handle errors in computed properties, with useRawError", t => {
   const vm = new Vue({
     asyncComputed: {
       a () {
+        // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('error')
       }
     }
@@ -190,8 +191,7 @@ test("Handle errors in computed properties, with useRawError", t => {
   }
 })
 
-test("Handle multiple asyncComputed objects the same way normal as \
-normal computed property objects", t => {
+test("Handle multiple asyncComputed objects the same way normal as normal computed property objects", t => {
   t.plan(3)
   const vm = new Vue({
     mixins: [{
@@ -325,6 +325,7 @@ test("Watchers rerun the computation when a value changes", t => {
           return Promise.resolve(i + this.y)
         },
         watch () {
+          // eslint-disable-next-line no-unused-expressions
           this.x
         }
       }
