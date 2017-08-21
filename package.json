@@ -10,11 +10,11 @@
   "scripts": {
     "clean": "rimraf dist",
     "lint": "eslint src test",
-    "check": "npm run lint -s && dependency-check package.json --entry src",
+    "check": "npm run lint -s && dependency-check package.json --no-default-entries src/index.js",
     "watch": "watch 'npm run build' src test",
     "test": "babel-node test/index.js | tspec",
     "prebuild": "npm run check -s && npm run clean -s",
-    "build": "babel --optional runtime src -d dist",
+    "build": "mkdir -p dist && babel --optional runtime src --out-file dist/index.js",
     "postbuild": "npm run test -s",
     "coverage": "node_modules/.bin/babel-node node_modules/.bin/babel-istanbul cover test/index.js",
     "coveralls": "npm run coverage -s && coveralls < coverage/lcov.info",

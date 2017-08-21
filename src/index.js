@@ -1,3 +1,12 @@
+import {
+  initLazy,
+  isComputedLazy,
+  isLazyActive,
+  makeLazyComputed,
+  silentGetLazy,
+  silentSetLazy,
+} from './lazy'
+
 const prefix = '_async_computed$'
 
 const AsyncComputed = {
@@ -15,7 +24,7 @@ const AsyncComputed = {
         if (!this.$options.computed) this.$options.computed = {}
 
         for (const key in this.$options.asyncComputed || {}) {
-          this.$options.computed[prefix + key] = getterFor(this.$options.asyncComputed[key])
+          this.$options.computed[prefix + key] = getterFn(key, this.$options.asyncComputed[key])
         }
 
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
@@ -25,14 +34,26 @@ const AsyncComputed = {
               : optionData
           ) || {}
           for (const key in this.$options.asyncComputed || {}) {
-            data[key] = null
+            const item = this.$options.asyncComputed[key]
+            if (isComputedLazy(item)) {
+              initLazy(data, key)
+              this.$options.computed[key] = makeLazyComputed(key)
+            } else {
+              data[key] = null
+            }
           }
           return data
         }
       },
       created () {
         for (const key in this.$options.asyncComputed || {}) {
-          this[key] = defaultFor.call(this, this.$options.asyncComputed[key], pluginOptions)
+          const item = this.$options.asyncComputed[key],
+                value = generateDefault.call(this, item, pluginOptions)
+          if (isComputedLazy(item)) {
+            silentSetLazy(this, key, value)
+          } else {
+            this[key] = value
+          }
         }
 
         for (const key in this.$options.asyncComputed || {}) {
@@ -69,7 +90,7 @@ const AsyncComputed = {
   }
 }
 
-function getterFor (fn) {
+function getterFn (key, fn) {
   if (typeof fn === 'function') return fn
 
   let getter = fn.get
@@ -80,10 +101,20 @@ function getterFor (fn) {
       return fn.get.call(this)
     }
   }
+  if (isComputedLazy(fn)) {
+    const nonLazy = getter
+    getter = function lazyGetter () {
+      if (isLazyActive(this, key)) {
+        return nonLazy.call(this)
+      } else {
+        return silentGetLazy(this, key)
+      }
+    }
+  }
   return getter
 }
 
-function defaultFor (fn, pluginOptions) {
+function generateDefault (fn, pluginOptions) {
   let defaultValue = null
 
   if ('default' in fn) {

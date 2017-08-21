@@ -415,3 +415,90 @@ test("Work correctly with Vue.extend", t => {
     t.equal(vm.x, 1)
   })
 })
+
+test("Async computed values can be calculated lazily", t => {
+  t.plan(7)
+
+  let called = false
+  const vm = new Vue({
+    asyncComputed: {
+      a: {
+        lazy: true,
+        get () {
+          called = true
+          return Promise.resolve(10)
+        }
+      }
+    }
+  })
+
+  t.equal(called, false)
+  Vue.nextTick(() => {
+    t.equal(called, false)
+    t.equal(vm.a, null)
+    t.equal(vm.a, null)
+    t.equal(called, false)
+    Vue.nextTick(() => {
+      t.equal(called, true)
+      Vue.nextTick(() => {
+        t.equal(vm.a, 10)
+      })
+    })
+  })
+})
+
+test("Async computed values aren't lazy with { lazy: false }", t => {
+  t.plan(4)
+
+  let called = false
+  const vm = new Vue({
+    asyncComputed: {
+      a: {
+        lazy: false,
+        get () {
+          called = true
+          return Promise.resolve(10)
+        }
+      }
+    }
+  })
+
+  t.equal(called, true)
+  t.equal(vm.a, null)
+  Vue.nextTick(() => {
+    t.equal(called, true)
+    t.equal(vm.a, 10)
+  })
+})
+
+test("Async computed values can be calculated lazily with a default", t => {
+  t.plan(7)
+
+  let called = false
+  const vm = new Vue({
+    asyncComputed: {
+      a: {
+        lazy: true,
+        default: 3,
+        get () {
+          called = true
+          return Promise.resolve(4)
+        }
+      }
+    }
+  })
+
+  t.equal(called, false)
+  Vue.nextTick(() => {
+    t.equal(called, false)
+    t.equal(vm.a, 3)
+    t.equal(vm.a, 3)
+    t.equal(called, false)
+    Vue.nextTick(() => {
+      t.equal(called, true)
+      Vue.nextTick(() => {
+        t.equal(vm.a, 4)
+      })
+    })
+  })
+})
