@@ -102,7 +102,7 @@ Alternately, you can link it directly from a CDN:
   That will always point to the latest version of vue-async-computed.
   You probably want to instead pin it to a specific version:
 -->
-<script src="https://unpkg.com/vue-async-computed@3.2.1"></script>
+<script src="https://unpkg.com/vue-async-computed@3.3.0"></script>
 ````
 
 When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
@@ -236,7 +236,7 @@ Just like normal computed properties, async computed properties keep track of th
 recalculated if those dependencies change. But often you'll have an async computed property you'll want to run again
 without any of its (local) dependencies changing, such as for instance the data may have changed in the database.
 
-You can set up a `watch` function, whose purpose is to set up listeners on additinal dependencies. Your async computed
+You can set up a `watch` function, whose purpose is to set up listeners on additional dependencies. Your async computed
 property will then be recalculated also if any of the watched dependencies change, in addition to the real dependencies
 the property itself has:
 ````js
@@ -258,6 +258,32 @@ new Vue({
       watch () {
         this.timesPostHasBeenUpdated
       }
+    }
+  }
+}
+````
+
+## Lazy properties
+
+Normally, computed properties are run both immediately, and as necessary when their dependencies change.
+With async computed properties, you sometimes don't want that. With `lazy: true`, an async computed
+property will only be computed the first time it's accessed.
+
+For example:
+````js
+new Vue({
+  data: {
+    id: 1
+  },
+  asyncComputed: {
+    mightNotBeNeeded: {
+      lazy: true,
+      get () {
+        return Vue.http.get('/might-not-be-needed/' + this.id)
+          .then(response => response.data.value)
+      }
+      // The value of `mightNotBeNeeded` will only be
+      // calculated when it is first accessed.
     }
   }
 }

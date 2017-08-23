@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.3.0](#v330)
 - [v3.2.1](#v321)
 - [v3.2.0](#v320)
 - [v3.1.3](#v313)
@@ -18,10 +19,12 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+### v3.3.0
+  * New feature: lazily computed properties.
 
 ### v3.2.1
-  * Fix bugs with dev dependencies and the new package-lock.json file
-  * Tests on Travis now also run on Node 8
+  * Fix bugs with dev dependencies and the new package-lock.json file.
+  * Tests on Travis now also run on Node 8.
 
 ### v3.2.0
   * Introduce `watch` feature.
