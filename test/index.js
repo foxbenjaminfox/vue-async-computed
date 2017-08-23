@@ -12,7 +12,7 @@ const pluginOptions = {
 
 Vue.use(AsyncComputed, pluginOptions)
 
-test("Async computed values get computed", t => {
+test("Async computed values are computed", t => {
   t.plan(4)
   const vm = new Vue({
     asyncComputed: {
@@ -38,7 +38,7 @@ test("Async computed values get computed", t => {
   })
 })
 
-test("Computed value being an already resolved promise updates at the next tick", t => {
+test("An async computed value which is an pre-resolved promise updates at the next tick", t => {
   t.plan(2)
   const vm = new Vue({
     asyncComputed: {
@@ -77,7 +77,7 @@ test("Sync and async computed data work together", t => {
   })
 })
 
-test("Recalculated async value is properly recalculated", t => {
+test("Async values are properly recalculated", t => {
   t.plan(6)
   const vm = new Vue({
     asyncComputed: {
@@ -114,7 +114,7 @@ test("Recalculated async value is properly recalculated", t => {
   })
 })
 
-test("Old async value is invalidated", t => {
+test("Old async values are properly invalidated", t => {
   t.plan(2)
   const vm = new Vue({
     asyncComputed: {
@@ -154,7 +154,7 @@ test("Having only sync computed data still works", t => {
   vm.x++
 })
 
-test("Handle errors in computed properties", t => {
+test("Errors in computed properties are handled", t => {
   t.plan(3)
   const vm = new Vue({
     asyncComputed: {
@@ -171,7 +171,7 @@ test("Handle errors in computed properties", t => {
   }
 })
 
-test("Handle errors in computed properties, with useRawError", t => {
+test("Errors in computed properties are handled, with useRawError", t => {
   pluginOptions.useRawError = true
   t.plan(3)
   const vm = new Vue({
@@ -191,7 +191,7 @@ test("Handle errors in computed properties, with useRawError", t => {
   }
 })
 
-test("Handle multiple asyncComputed objects the same way normal as normal computed property objects", t => {
+test("Multiple asyncComputed objects are handled the same as normal computed property objects", t => {
   t.plan(3)
   const vm = new Vue({
     mixins: [{
@@ -279,7 +279,7 @@ test("Default values can be functions", t => {
   })
 })
 
-test("The computed value can be written to, and then will be properly overridden", t => {
+test("Async computed values can be written to, and then will be properly overridden", t => {
   t.plan(5)
   const vm = new Vue({
     data: {
@@ -367,7 +367,7 @@ test("The default default value can be set in the plugin options", t => {
   })
 })
 
-test("The default default value can be set in the plugin options to undefined", t => {
+test("The default default value can be set to undefined in the plugin options", t => {
   t.plan(2)
   pluginOptions.default = undefined
   const vm = new Vue({
