@@ -502,3 +502,42 @@ test("Async computed values can be calculated lazily with a default", t => {
     })
   })
 })
+
+test("Updating flag is set while porperty is re-computed", t => {
+  t.plan(10)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        return new Promise(resolve => {
+          setTimeout(() => resolve('done'), 10)
+        })
+      },
+      b () {
+        const data = this.c
+        return new Promise(resolve => {
+          setTimeout(() => resolve(data), 20)
+        })
+      }
+    },
+    data: () => ({
+      c: false
+    })
+  })
+  t.equal(vm.a$updating, true)
+  t.equal(vm.b$updating, true)
+  vm.$watch('a', function (val) {
+    t.equal(val, 'done')
+    t.equal(vm.a$updating, false)
+    t.equal(vm.b$updating, true)
+  })
+  vm.$watch('b', function (val) {
+    t.equal(val, vm.c)
+    t.equal(vm.b$updating, false)
+    if (!vm.c) {
+      vm.c = true
+      Vue.nextTick(() => {
+        t.equal(vm.b$updating, true)
+      })
+    }
+  })
+})
