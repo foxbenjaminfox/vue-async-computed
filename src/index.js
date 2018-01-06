@@ -41,6 +41,7 @@ const AsyncComputed = {
             } else {
               data[key] = null
             }
+            data[key + '$updating'] = false
           }
           return data
         }
@@ -58,8 +59,10 @@ const AsyncComputed = {
 
         for (const key in this.$options.asyncComputed || {}) {
           let promiseId = 0
+          const updatingKey = key + '$updating'
           this.$watch(prefix + key, newPromise => {
             const thisPromise = ++promiseId
+            this[updatingKey] = true
 
             if (!newPromise || !newPromise.then) {
               newPromise = Promise.resolve(newPromise)
@@ -67,9 +70,11 @@ const AsyncComputed = {
 
             newPromise.then(value => {
               if (thisPromise !== promiseId) return
+              this[updatingKey] = false
               this[key] = value
             }).catch(err => {
               if (thisPromise !== promiseId) return
+              this[updatingKey] = false
 
               if (pluginOptions.errorHandler === false) return
 
