@@ -502,3 +502,47 @@ test("Async computed values can be calculated lazily with a default", t => {
     })
   })
 })
+
+test("Underscore prefixes work (issue #33)", t => {
+  t.plan(4)
+  const vm = new Vue({
+    computed: {
+      sync_a () {
+        return 1
+      },
+      _sync_b () {
+        return 2
+      }
+    },
+    data () {
+      return { a_complete: false }
+    },
+    asyncComputed: {
+      _async_a () {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve(this.sync_a)
+            this.a_complete = true
+          }, 10)
+        })
+      },
+      async_b () {
+        return new Promise(resolve => {
+          setTimeout(() => resolve(this._sync_b), 10)
+        })
+      }
+    }
+  })
+  t.equal(vm._async_a, null)
+  t.equal(vm.async_b, null)
+  // _async_a is not reactive, because
+  // it begins with an underscore
+  // so we'll watch 'a_complete' to know once
+  // async_a has been computed.
+  vm.$watch('a_complete', function (val) {
+    t.equal(vm._async_a, 1)
+  })
+  vm.$watch('async_b', function (val) {
+    t.equal(val, 2)
+  })
+})
