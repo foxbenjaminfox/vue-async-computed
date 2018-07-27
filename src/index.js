@@ -8,6 +8,7 @@ import {
 } from './lazy'
 
 const prefix = '_async_computed$'
+const DidNotUpdate = Symbol('did-not-update');
 
 const AsyncComputed = {
   install (Vue, pluginOptions) {
@@ -61,6 +62,10 @@ const AsyncComputed = {
           this.$watch(prefix + key, newPromise => {
             const thisPromise = ++promiseId
 
+            if (newPromise === DidNotUpdate) {
+              return
+            }
+
             if (!newPromise || !newPromise.then) {
               newPromise = Promise.resolve(newPromise)
             }
@@ -95,10 +100,15 @@ function getterFn (key, fn) {
 
   let getter = fn.get
 
-  if (fn.hasOwnProperty('watch')) {
+  if (fn.hasOwnProperty('watch') || fn.hasOwnProperty('shouldUpdate')) {
+    let shouldUpdate = fn.shouldUpdate || (() => true)
+    let watcher = fn.watch || (() => {})
     getter = function getter () {
-      fn.watch.call(this)
-      return fn.get.call(this)
+      watcher.call(this)
+      if (shouldUpdate.call(this)) {
+        return fn.get.call(this)
+      }
+      return DidNotUpdate
     }
   }
   if (isComputedLazy(fn)) {

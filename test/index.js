@@ -339,12 +339,66 @@ test("Watchers rerun the computation when a value changes", t => {
     Vue.nextTick(() => {
       // This tick, Vue registers the change
       // in the watcher, and reevaluates
-      // the getter functin
+      // the getter function
       t.equal(vm.z, 2)
       Vue.nextTick(() => {
         // Now in this tick the promise has
         // resolved, and z is 3.
         t.equal(vm.z, 3)
+      })
+    })
+  })
+})
+
+test("shouldUpdate controls when to rerun the computation when a value changes", t => {
+  t.plan(6)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      x: 0,
+      y: 2,
+    },
+    asyncComputed: {
+      z: {
+        get () {
+          return Promise.resolve(i + this.y)
+        },
+        shouldUpdate () {
+          return this.x % 2 === 0
+        }
+      }
+    }
+  })
+  t.equal(vm.z, null)
+  Vue.nextTick(() => {
+    t.equal(vm.z, 2)
+    i++
+    // update x so it will be 1
+    // should update returns false now
+    vm.x++
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter function
+      t.equal(vm.z, 2)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and z is 2 since should update returned false.
+        t.equal(vm.z, 2)
+        // update x so it will be 2
+        // should update returns true now
+        vm.x++
+        Vue.nextTick(() => {
+          // This tick, Vue registers the change
+          // in the watcher, and reevaluates
+          // the getter function
+          t.equal(vm.z, 2)
+          Vue.nextTick(() => {
+            // Now in this tick the promise has
+            // resolved, and z is 3.
+            t.equal(vm.z, 3)
+          })
+        })
       })
     })
   })
