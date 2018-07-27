@@ -98,19 +98,17 @@ const AsyncComputed = {
 function getterFn (key, fn) {
   if (typeof fn === 'function') return fn
 
-  let getter = fn.get
+  let watcher = fn.watch || (() => {})
+  let shouldUpdate = fn.shouldUpdate || (() => true)
 
-  if (fn.hasOwnProperty('watch') || fn.hasOwnProperty('shouldUpdate')) {
-    let shouldUpdate = fn.shouldUpdate || (() => true)
-    let watcher = fn.watch || (() => {})
-    getter = function getter () {
-      watcher.call(this)
-      if (shouldUpdate.call(this)) {
-        return fn.get.call(this)
-      }
-      return DidNotUpdate
+  let getter = function getter () {
+    watcher.call(this)
+    if (shouldUpdate.call(this)) {
+      return fn.get.call(this)
     }
+    return DidNotUpdate
   }
+
   if (isComputedLazy(fn)) {
     const nonLazy = getter
     getter = function lazyGetter () {
@@ -121,6 +119,7 @@ function getterFn (key, fn) {
       }
     }
   }
+
   return getter
 }
 
