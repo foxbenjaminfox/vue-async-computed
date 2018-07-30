@@ -98,13 +98,23 @@ const AsyncComputed = {
 function getterFn (key, fn) {
   if (typeof fn === 'function') return fn
 
-  let watcher = fn.watch || (() => {})
-  let shouldUpdate = fn.shouldUpdate || (() => true)
+  let getter = fn.get
 
-  let getter = function getter () {
-    watcher.call(this)
-    if (shouldUpdate.call(this)) {
-      return fn.get.call(this)
+  if (fn.hasOwnProperty('watch')) {
+    const previousGetter = getter
+    getter = function getter () {
+      fn.watch.call(this)
+      return previousGetter.call(this)
+    }
+  }
+
+  if (fn.hasOwnProperty('shouldUpdate')) {
+    const previousGetter = getter
+    getter = function getter () {
+      if (fn.shouldUpdate.call(this)) {
+        return previousGetter.call(this)
+      }
+      return DidNotUpdate
     }
     return DidNotUpdate
   }
