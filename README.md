@@ -263,6 +263,40 @@ new Vue({
 }
 ````
 
+### Conditional Recalculation
+
+Using `watch` it is possible to run the computed property again but it will run regardless of the
+value of the watched property. If you need more control over when the computation should be rerun
+you can use `shouldUpdate`:
+````js
+
+new Vue({
+  data: {
+    postId: 1,
+    // Imagine pageType can be one of 'index', 'details' and 'edit'
+    pageType: 'index'
+  },
+  asyncComputed: {
+    blogPostContent: {
+      get () {
+        return Vue.http.get('/post/' + this.postId)
+          .then(response => response.data.postContent)
+      },
+      // Will update whenever the pageType or postId changes
+      // but only if the pageType is not 'index' this way the
+      // blogPostContent will be refetched when loading the
+      // 'details' and 'edit' pages
+      shouldUpdate () {
+        return this.pageType !== 'index'
+      }
+    }
+  }
+}
+````
+
+The main advantage over adding an if statement within the get function is that when the computation is
+not rerun you are able to still access the old value.
+
 ## Lazy properties
 
 Normally, computed properties are run both immediately, and as necessary when their dependencies change.
