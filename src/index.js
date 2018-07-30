@@ -100,17 +100,24 @@ function getterFn (key, fn) {
 
   let getter = fn.get
 
-  if (fn.hasOwnProperty('watch') || fn.hasOwnProperty('shouldUpdate')) {
-    let shouldUpdate = fn.shouldUpdate || (() => true)
-    let watcher = fn.watch || (() => {})
+  if (fn.hasOwnProperty('watch')) {
+    const previousGetter = getter
     getter = function getter () {
-      watcher.call(this)
-      if (shouldUpdate.call(this)) {
-        return fn.get.call(this)
+      fn.watch.call(this)
+      return previousGetter.call(this)
+    }
+  }
+
+  if (fn.hasOwnProperty('shouldUpdate')) {
+    const previousGetter = getter
+    getter = function getter () {
+      if (fn.shouldUpdate.call(this)) {
+        return previousGetter.call(this)
       }
       return DidNotUpdate
     }
   }
+
   if (isComputedLazy(fn)) {
     const nonLazy = getter
     getter = function lazyGetter () {
