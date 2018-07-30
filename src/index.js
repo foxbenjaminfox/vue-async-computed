@@ -128,6 +128,7 @@ function getterFn (key, fn) {
       }
     }
   }
+
   return getter
 }
 
