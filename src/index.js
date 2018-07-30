@@ -116,7 +116,6 @@ function getterFn (key, fn) {
       }
       return DidNotUpdate
     }
-    return DidNotUpdate
   }
 
   if (isComputedLazy(fn)) {
