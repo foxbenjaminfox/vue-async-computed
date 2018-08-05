@@ -404,6 +404,64 @@ test("shouldUpdate controls when to rerun the computation when a value changes",
   })
 })
 
+test("Watchers trigger but shouldUpdate can still block their updates", t => {
+  t.plan(6)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      canUpdate: true,
+      x: 0,
+      y: 2,
+    },
+    asyncComputed: {
+      z: {
+        get () {
+          return Promise.resolve(i + this.y)
+        },
+        watch () {
+          // eslint-disable-next-line no-unused-expressions
+          this.x
+        },
+        shouldUpdate () {
+          return this.canUpdate
+        }
+      }
+    }
+  })
+  t.equal(vm.z, null)
+  Vue.nextTick(() => {
+    t.equal(vm.z, 2)
+    i++
+    vm.x--
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter function
+      t.equal(vm.z, 2)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and z is 3.
+        t.equal(vm.z, 3)
+        // We stop all updates from now on
+        vm.canUpdate = false
+        i++
+        vm.x--
+        Vue.nextTick(() => {
+          // This tick, Vue registers the change
+          // in the watcher, and reevaluates
+          // the getter function but no update
+          t.equal(vm.z, 3)
+          Vue.nextTick(() => {
+            // Now in this tick the promise has
+            // resolved, and z is still 3.
+            t.equal(vm.z, 3)
+          })
+        })
+      })
+    })
+  })
+})
+
 test("The default default value can be set in the plugin options", t => {
   t.plan(2)
   pluginOptions.default = 53
@@ -658,4 +716,3 @@ test("shouldUpdate works with lazy", t => {
     })
   })
 })
-
