@@ -600,3 +600,62 @@ test("Underscore prefixes work (issue #33)", t => {
     t.equal(val, 2)
   })
 })
+
+test("shouldUpdate works with lazy", t => {
+  t.plan(8)
+  const vm = new Vue({
+    data: {
+      a: 0,
+      x: true,
+      y: false,
+    },
+    asyncComputed: {
+      b: {
+        lazy: true,
+        get () {
+          return Promise.resolve(this.a)
+        },
+        shouldUpdate () {
+          return this.x
+        }
+      },
+      c: {
+        lazy: true,
+        get () {
+          return Promise.resolve(this.a)
+        },
+        shouldUpdate () {
+          return this.y
+        }
+      }
+    }
+  })
+
+  Vue.nextTick(() => {
+    t.equal(vm.b, null)
+    t.equal(vm.c, null)
+    Vue.nextTick(() => {
+      Vue.nextTick(() => {
+        t.equal(vm.b, 0)
+        t.equal(vm.c, null)
+        vm.a++
+        Vue.nextTick(() => {
+          Vue.nextTick(() => {
+            t.equal(vm.b, 1)
+            t.equal(vm.c, null)
+            vm.x = false
+            vm.y = true
+            vm.a++
+            Vue.nextTick(() => {
+              Vue.nextTick(() => {
+                t.equal(vm.b, 1)
+                t.equal(vm.c, 2)
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
