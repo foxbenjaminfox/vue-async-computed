@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.4.0](#v340)
 - [v3.3.0](#v330)
 - [v3.2.1](#v321)
 - [v3.2.0](#v320)
@@ -19,6 +20,11 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.4.0
+  * Add a `shouldUpdate` option, which can control when and if
+    an async computed property updates.
+
 ### v3.3.0
   * New feature: lazily computed properties.
 
