@@ -8,7 +8,7 @@ import {
 } from './lazy'
 
 const prefix = '_async_computed$'
-const DidNotUpdate = Symbol('did-not-update')
+const DidNotUpdate = typeof Symbol === 'function' ? Symbol('did-not-update') : {}
 
 const AsyncComputed = {
   install (Vue, pluginOptions) {
