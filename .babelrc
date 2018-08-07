@@ -1,5 +1,7 @@
 {
   "presets": [
-    "env"
+    ["env", {
+      "modules": false
+    }]
   ]
 }
