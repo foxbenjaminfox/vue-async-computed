@@ -38,7 +38,7 @@ With this plugin, you can have computed properties in Vue that are computed asyn
 
 Without using this plugin, you can't do this:
 
-````js
+```js
 new Vue({
   data: {
     userId: 1
@@ -56,11 +56,11 @@ new Vue({
     }
   }
 }
-````
+```
 
 Or rather, you could, but it wouldn't do what you'd want it to do. But using this plugin, it works just like you'd expect:
 
-````js
+```js
 new Vue({
   data: {
     userId: 1
@@ -72,11 +72,11 @@ new Vue({
     }
   }
 }
-````
+```
 
 This is especially useful with ES7 async functions:
 
-````js
+```js
 new Vue({
   asyncComputed: {
     async someCalculation () {
@@ -86,39 +86,39 @@ new Vue({
     }
   }
 })
-````
+```
 
 ## Install
 
-````sh
+```sh
 npm install --save vue-async-computed
-````
+```
 
 Alternately, you can link it directly from a CDN:
 
-````html
+```html
 <script src="https://unpkg.com/vue-async-computed"></script>
 <!-- 
   That will always point to the latest version of vue-async-computed.
   You probably want to instead pin it to a specific version:
 -->
 <script src="https://unpkg.com/vue-async-computed@3.4.1"></script>
-````
+```
 
 When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
 
-````js
+```js
 import Vue from 'vue'
 import AsyncComputed from 'vue-async-computed'
 
 Vue.use(AsyncComputed)
-````
+```
 
 You don't need to do this when using global script tags. So long as you include `vue-async-computed` in a script tag after Vue itself, it will be installed automatically.
 
 ## Usage example
 
-````js
+```js
 import AsyncComputed from 'vue-async-computed'
 
 /* Initialize the plugin */
@@ -161,7 +161,7 @@ const vm = new Vue({
    second later vm.sum will automatically update itself to be
    the sum of the values to which you set vm.x and vm.y the previous second.
 */
-````
+```
 
 [Like with regular synchronous computed properties](https://vuejs.org/guide/computed.html#Computed-Setter), you can pass an object
 with a `get` method instead of a function, but unlike regular computed
@@ -171,7 +171,7 @@ object provided has a `set` method it will be ignored.
 Async computed properties can also have a custom default value, which will
 be used until the data is loaded for the first time:
 
-````js
+```js
 new Vue({
   data: {
     postId: 1
@@ -198,12 +198,12 @@ new Vue({
    will show a loading message until the blog post's content arrives
    from the server.
 */
-````
+```
 
 You can instead define the default value as a function, in order to depend on
 props or on data:
 
-````js
+```js
 new Vue({
   data: {
     postId: 1
@@ -220,15 +220,15 @@ new Vue({
     }
   }
 }
-````
+```
 
 You can also set a custom global default value in the options passed to `Vue.use`:
 
-````javascript
+```javascript
 Vue.use(AsyncComputed, {
   default: 'Global default value'
 })
-````
+```
 
 ## Recalculation
 
@@ -239,7 +239,7 @@ without any of its (local) dependencies changing, such as for instance the data 
 You can set up a `watch` function, whose purpose is to set up listeners on additional dependencies. Your async computed
 property will then be recalculated also if any of the watched dependencies change, in addition to the real dependencies
 the property itself has:
-````js
+```js
 
 new Vue({
   data: {
@@ -261,14 +261,14 @@ new Vue({
     }
   }
 }
-````
+```
 
 ### Conditional Recalculation
 
 Using `watch` it is possible to run the computed property again but it will run regardless of the
 value of the watched property. If you need more control over when the computation should be rerun
 you can use `shouldUpdate`:
-````js
+```js
 
 new Vue({
   data: {
@@ -292,7 +292,7 @@ new Vue({
     }
   }
 }
-````
+```
 
 The main advantage over adding an if statement within the get function is that when the computation is
 not rerun you are able to still access the old value.
@@ -304,7 +304,7 @@ With async computed properties, you sometimes don't want that. With `lazy: true`
 property will only be computed the first time it's accessed.
 
 For example:
-````js
+```js
 new Vue({
   data: {
     id: 1
@@ -321,7 +321,7 @@ new Vue({
     }
   }
 }
-````
+```
 
 ## Error handling
 
@@ -332,7 +332,7 @@ If you want to use a custom logging function, the plugin takes an `errorHandler`
 
 For example: 
 
-````js
+```js
 Vue.use(AsyncComputed, {
   errorHandler (stack) {
     console.log('Hey, an error!')
@@ -351,7 +351,7 @@ Vue.use(AsyncComputed, {
     console.log(err.stack)
   }
 )
-````
+```
 
 You can pass `false` as the `errorHandler` in order to silently ignore rejected promises.
 
