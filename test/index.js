@@ -11,6 +11,7 @@ const pluginOptions = {
 }
 
 Vue.use(AsyncComputed, pluginOptions)
+process.NODE_ENV = 'production'
 
 test("Async computed values are computed", t => {
   t.plan(4)

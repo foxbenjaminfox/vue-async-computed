@@ -30,6 +30,8 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = getterFn(key, this.$options.asyncComputed[key])
         }
 
+        this._asyncComputedWatcher = {}
+
         this.$options.data = function vueAsyncComputedInjectedDataFn () {
           const data = (
             (typeof optionData === 'function')
@@ -61,7 +63,8 @@ const AsyncComputed = {
 
         for (const key in this.$options.asyncComputed || {}) {
           let promiseId = 0
-          this.$watch(prefix + key, newPromise => {
+
+          const watcher = newPromise => {
             const thisPromise = ++promiseId
 
             if (newPromise === DidNotUpdate) {
@@ -90,7 +93,10 @@ const AsyncComputed = {
                 handler(err.stack)
               }
             })
-          }, {immediate: true})
+          }
+
+          this.$watch(prefix + key, watcher, {immediate: true})
+          this._asyncComputedWatcher[key] = watcher
         }
       }
     })
@@ -149,18 +155,18 @@ function generateDefault (fn, pluginOptions) {
   }
 }
 
-function $refreshAsyncComputed (propName) {
-  const promisePropName = prefix + propName
-  if (this.hasOwnProperty(propName) && this._computedWatchers && this._computedWatchers[promisePropName]) {
-    this._computedWatchers[promisePropName].evaluate()
-    const [watcher] = this._watchers.filter(watcher => watcher.expression === promisePropName)
-    const promise = this[promisePropName]
-    return promise.then(() => {
-      watcher.run()
-      return promise
+function $refreshAsyncComputed (key) {
+  const prefixedKey = prefix + key
+  if (this.hasOwnProperty(key) && this.hasOwnProperty(prefixedKey) && this._asyncComputedWatcher[key]) {
+    this._computedWatchers[prefixedKey].evaluate()
+    const watcher = this._asyncComputedWatcher[key]
+    const newPromise = this[prefixedKey]
+    return newPromise.then(() => {
+      watcher.apply(this, [newPromise])
+      return newPromise
     })
   } else {
-    throw new Error('Can not find async computed property ' + JSON.stringify(propName))
+    throw new Error('Can not find async computed property ' + JSON.stringify(key))
   }
 }
 
