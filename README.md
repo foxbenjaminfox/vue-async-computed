@@ -322,6 +322,31 @@ new Vue({
   }
 }
 ```
+## Manually Refreshed
+
+Sometimes, we should refresh properties manually to sync data from server side.
+Using `$refreshAsyncComputed(propName)` to refresh manually and get promise for refreshing.
+
+For example:
+```js
+new Vue({
+  asyncComputed: {
+    articleList() {
+      return Vue.http.get('/article/list')
+    }
+  },
+  methods: {
+    newArticle() {
+      Vue.http.post('/article/new', {
+        title: 'New Article', 
+        content: 'Hello world'
+      })
+      .then(() => this.$refreshAsyncComputed('articleList'))
+      .then(() => console.log('done'))
+    }
+  }
+})
+```
 
 ## Error handling
 

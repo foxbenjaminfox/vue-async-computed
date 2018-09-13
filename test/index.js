@@ -716,3 +716,42 @@ test("shouldUpdate works with lazy", t => {
     })
   })
 })
+
+test('$refreshAsyncComputed works', t => {
+  t.plan(7)
+
+  let countA = 1
+  let countB = 1
+
+  const vm = new Vue({
+    asyncComputed: {
+      async_a () { return new Promise(resolve => setTimeout(() => resolve(countA++), 6)) },
+      lazy_async_b: {
+        lazy: true,
+        get () { return new Promise(resolve => setTimeout(() => resolve(countB++), 6)) },
+      }
+    }
+  })
+
+  t.equal(vm.async_a, null)
+  setTimeout(() => {
+    t.equal(vm.async_a, 1)
+    // eslint-disable-next-line promise/catch-or-return
+    vm.$refreshAsyncComputed('async_a').then(() => t.equal(vm.async_a, 2))
+  }, 12)
+
+  setTimeout(() => {
+    t.equal(vm.lazy_async_b, null)
+    setTimeout(() => {
+      t.equal(vm.lazy_async_b, 1)
+      // eslint-disable-next-line promise/catch-or-return
+      vm.$refreshAsyncComputed('lazy_async_b').then(() => t.equal(vm.lazy_async_b, 2))
+    }, 12)
+  }, 12)
+
+  try {
+    vm.$refreshAsyncComputed('wrong_property')
+  } catch (err) {
+    t.equal(err.message, 'Can not find async computed property ' + JSON.stringify('wrong_property'))
+  }
+})

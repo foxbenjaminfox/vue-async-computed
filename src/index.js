@@ -18,6 +18,8 @@ const AsyncComputed = {
       .optionMergeStrategies
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
+    Vue.prototype.$refreshAsyncComputed = $refreshAsyncComputed
+
     Vue.mixin({
       beforeCreate () {
         const optionData = this.$options.data
@@ -88,7 +90,7 @@ const AsyncComputed = {
                 handler(err.stack)
               }
             })
-          }, { immediate: true })
+          }, {immediate: true})
         }
       }
     })
@@ -144,6 +146,21 @@ function generateDefault (fn, pluginOptions) {
     return defaultValue.call(this)
   } else {
     return defaultValue
+  }
+}
+
+function $refreshAsyncComputed (propName) {
+  const promisePropName = prefix + propName
+  if (this.hasOwnProperty(propName) && this._computedWatchers && this._computedWatchers[promisePropName]) {
+    this._computedWatchers[promisePropName].evaluate()
+    const [watcher] = this._watchers.filter(watcher => watcher.expression === promisePropName)
+    const promise = this[promisePropName]
+    return promise.then(() => {
+      watcher.run()
+      return promise
+    })
+  } else {
+    throw new Error('Can not find async computed property ' + JSON.stringify(propName))
   }
 }
 
