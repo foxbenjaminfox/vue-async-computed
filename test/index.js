@@ -718,7 +718,7 @@ test("shouldUpdate works with lazy", t => {
   })
 })
 
-test('$refreshAsyncComputed works', t => {
+test('$updateAsyncComputed works', t => {
   t.plan(7)
 
   let countA = 1
@@ -738,7 +738,7 @@ test('$refreshAsyncComputed works', t => {
   setTimeout(() => {
     t.equal(vm.async_a, 1)
     // eslint-disable-next-line promise/catch-or-return
-    vm.$refreshAsyncComputed('async_a').then(() => t.equal(vm.async_a, 2))
+    vm.$updateAsyncComputed('async_a').then(() => t.equal(vm.async_a, 2))
   }, 12)
 
   setTimeout(() => {
@@ -746,12 +746,12 @@ test('$refreshAsyncComputed works', t => {
     setTimeout(() => {
       t.equal(vm.lazy_async_b, 1)
       // eslint-disable-next-line promise/catch-or-return
-      vm.$refreshAsyncComputed('lazy_async_b').then(() => t.equal(vm.lazy_async_b, 2))
+      vm.$updateAsyncComputed('lazy_async_b').then(() => t.equal(vm.lazy_async_b, 2))
     }, 12)
   }, 12)
 
   try {
-    vm.$refreshAsyncComputed('wrong_property')
+    vm.$updateAsyncComputed('wrong_property')
   } catch (err) {
     t.equal(err.message, 'Can not find async computed property ' + JSON.stringify('wrong_property'))
   }

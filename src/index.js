@@ -18,7 +18,7 @@ const AsyncComputed = {
       .optionMergeStrategies
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
-    Vue.prototype.$refreshAsyncComputed = $refreshAsyncComputed
+    Vue.prototype.$updateAsyncComputed = $updateAsyncComputed
 
     Vue.mixin({
       beforeCreate () {
@@ -155,7 +155,7 @@ function generateDefault (fn, pluginOptions) {
   }
 }
 
-function $refreshAsyncComputed (key) {
+function $updateAsyncComputed (key) {
   const prefixedKey = prefix + key
   if (this.hasOwnProperty(key) && this.hasOwnProperty(prefixedKey) && this._asyncComputedWatcher[key]) {
     this._computedWatchers[prefixedKey].evaluate()
