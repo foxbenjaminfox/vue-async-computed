@@ -716,3 +716,95 @@ test("shouldUpdate works with lazy", t => {
     })
   })
 })
+
+test("$asyncComputed is empty if there are no async computed properties", t => {
+  t.plan(1)
+  const vm = new Vue({
+  })
+  t.deepEqual(vm.$asyncComputed, {})
+})
+
+test("$asyncComputed[name] is created for all async computed properties", t => {
+  t.plan(15)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        return Promise.resolve(1)
+      },
+      b () {
+        return Promise.resolve(2)
+      }
+    }
+  })
+  t.deepEqual(Object.keys(vm.$asyncComputed), ['a', 'b'])
+  t.equal(vm.$asyncComputed['a'].state, 'updating')
+  t.equal(vm.$asyncComputed['b'].state, 'updating')
+  t.equal(vm.$asyncComputed['a'].updating, true)
+  t.equal(vm.$asyncComputed['a'].success, false)
+  t.equal(vm.$asyncComputed['a'].error, false)
+  t.equal(vm.$asyncComputed['a'].exception, null)
+
+  Vue.nextTick(() => {
+    t.equal(vm.a, 1)
+    t.equal(vm.b, 2)
+    t.equal(vm.$asyncComputed['a'].state, 'success')
+    t.equal(vm.$asyncComputed['b'].state, 'success')
+    t.equal(vm.$asyncComputed['a'].updating, false)
+    t.equal(vm.$asyncComputed['a'].success, true)
+    t.equal(vm.$asyncComputed['a'].error, false)
+    t.equal(vm.$asyncComputed['a'].exception, null)
+  })
+})
+
+test("$asyncComputed[name] handles errors and captures exceptions", t => {
+  t.plan(7)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('error-message')
+      }
+    }
+  })
+  t.equal(vm.$asyncComputed['a'].state, 'updating')
+  pluginOptions.errorHandler = stack => {
+    t.equal(vm.a, null)
+    t.equal(vm.$asyncComputed['a'].state, 'error')
+    t.equal(vm.$asyncComputed['a'].updating, false)
+    t.equal(vm.$asyncComputed['a'].success, false)
+    t.equal(vm.$asyncComputed['a'].error, true)
+    t.equal(vm.$asyncComputed['a'].exception, 'error-message')
+    pluginOptions.errorHandler = baseErrorCallback
+  }
+})
+
+test("$asyncComputed[name].update triggers re-evaluation", t => {
+  let valueToReturn = 1
+  t.plan(5)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        return new Promise(resolve => {
+          resolve(valueToReturn)
+        })
+      }
+    }
+  })
+
+  Vue.nextTick(() => {
+    t.equal(vm.a, 1)
+    valueToReturn = 2
+    t.equal(vm.$asyncComputed['a'].state, 'success')
+    vm.$asyncComputed['a'].update()
+    t.equal(vm.$asyncComputed['a'].state, 'updating')
+
+    Vue.nextTick(() => {
+      t.equal(vm.a, 2)
+      valueToReturn = 3
+
+      Vue.nextTick(() => {
+        t.equal(vm.a, 2)
+      })
+    })
+  })
+})
