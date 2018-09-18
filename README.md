@@ -263,6 +263,29 @@ new Vue({
 }
 ```
 
+You can trigger re-computation of an async computed property manually, e.g. to re-try if an error occured during evaluation. This should be avoided if you are able to achieve the same result using a watched property.
+
+````js
+
+new Vue({
+  asyncComputed: {
+    blogPosts: {
+      get () {
+        return Vue.http.get('/posts')
+          .then(response => response.data)
+      },
+    }
+  },
+  methods: {
+    refresh() {
+      // Triggers an immediate update of blogPosts
+      // Will work even if an update is in progress.
+      this.$asyncComputed.blogPosts.update();
+    }
+  }
+}
+````
+
 ### Conditional Recalculation
 
 Using `watch` it is possible to run the computed property again but it will run regardless of the
@@ -323,7 +346,50 @@ new Vue({
 }
 ```
 
-## Error handling
+## Computation status
+
+For each async comptued property, an object is added to `$asyncComputed` that contains information about the current computation state of that object. This object contains the following properties:
+
+```js
+{
+  // Can be one of updating, success, error
+  state: 'updating',
+  // A boolean that is true while the property is updating.
+  updating: true,
+  // The property finished updating wihtout errors (the promise was resolved) and the current value is available.
+  success: false,
+  // The promise was rejected.
+  error: false,
+  // The raw error/exception with which the promise was rejected.
+  exception: null
+}
+```
+
+It is meant to be used in your rendering code to display update / error information.
+
+````js
+new Vue({
+  asyncComputed: {
+    posts() {
+      return Vue.http.get('/posts')
+        .then(response => response.data)
+      }
+    }
+  }
+}
+// This will display a loading message every time the posts are updated:
+// <div v-if="$asyncComputed.posts.updating"> (Re)loading posts </div>
+
+// If you only want to display the message the first times the posts load, you can use the fact that the default value is null:
+// <div v-if="$asyncComputed.posts.updating && posts === null"> Loading posts </div>
+
+// You can display an error message if loading the posts failed.
+// The vue-resources library passes the error response on to the rejection handler.
+// It is therefore available in $asyncComputed.posts.exception
+// <div v-else-if="$asyncComputed.posts.error"> Error while loading posts: $asyncComputed.posts.exception.statusText </div>
+````
+
+## Global error handling
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
 
