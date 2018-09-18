@@ -716,3 +716,70 @@ test("shouldUpdate works with lazy", t => {
     })
   })
 })
+
+test("Async computed values are consistent in repeatable change in non-debounce mode", t => {
+  t.plan(2)
+  const wait = (time) => new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, time)
+  })
+  const updateInterval = 40
+  const apiExecutionTimes = [20, 70, 120, 70, 20]
+  const completedTimes = apiExecutionTimes.map((executionTime, index) => {
+    return index * updateInterval + executionTime
+  })
+  let lastCompletedIndex = -1
+  const expectedValue = completedTimes.map((completedTime, index) => index)
+    .sort((a, b) => completedTimes[a] - completedTimes[b])
+    .filter(index => {
+      if (index > lastCompletedIndex) {
+        lastCompletedIndex = index
+        return true
+      }
+    })
+  console.log('completedTimes', completedTimes)
+  console.log('expectedValue', expectedValue)
+  const apiResultValue = []
+  let apiCalllCount = 0
+
+  const mockApi = async (value) => {
+    const executionTime = apiExecutionTimes[apiCalllCount]
+    ++apiCalllCount
+    await wait(executionTime)
+    return value
+  }
+
+  const vm = new Vue({
+    created () {
+      console.log('length', apiExecutionTimes.length);
+      (async () => {
+        for (let i = 1; i < apiExecutionTimes.length; ++i) {
+          await wait(updateInterval)
+          this.srcValue = this.srcValue + 1
+        }
+        await wait(apiExecutionTimes.slice(-1)[0] + 10)
+        t.deepEqual(apiResultValue, expectedValue)
+        t.equal(vm.dstValue, expectedValue.slice(-1)[0])
+      })()
+    },
+    data () {
+      return {
+        srcValue: 0,
+      }
+    },
+    watch: {
+      dstValue (dstValue) {
+        apiResultValue.push(dstValue)
+      },
+    },
+    asyncComputed: {
+      dstValue: {
+        debounce: false,
+        get () {
+          return mockApi(this.srcValue)
+        },
+      },
+    },
+  })
+})

@@ -323,6 +323,32 @@ new Vue({
 }
 ```
 
+## Cancel debouncing
+
+Normally, computed properties work with debouncing
+in the way the result of a change is not committed if other changes are triggered before the result is committed.
+For example, if a source property is continuously changing every 100ms and API call takes 500ms,
+normal async computed properties will not be changed until the change of the source property stops.
+With non-debounce option, async computed properties will be updated with the last source value.
+
+```js
+new Vue({
+  data: {
+    searchText: ""
+  },
+  asyncComputed: {
+    calculatedValue: {
+      debounce: false,
+      get () {
+        return fetch.get('/some-api/' + searchText)
+          .then(response => response.data.value)
+      }
+    }
+  }
+}
+```
+
+
 ## Error handling
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
