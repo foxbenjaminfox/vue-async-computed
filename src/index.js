@@ -58,8 +58,15 @@ const AsyncComputed = {
         }
 
         for (const key in this.$options.asyncComputed || {}) {
+          const item = this.$options.asyncComputed[key]
+          const debounce = (pluginOptions.debounce == null && item.debounce == null) ? null : (pluginOptions.debounce !== false && item.debounce !== false)
           let promiseId = 0
+          let reflectedPromiseId = 0
           this.$watch(prefix + key, newPromise => {
+            if (debounce === true && promiseId !== reflectedPromiseId) {
+              return
+            }
+
             const thisPromise = ++promiseId
 
             if (newPromise === DidNotUpdate) {
@@ -71,10 +78,28 @@ const AsyncComputed = {
             }
 
             newPromise.then(value => {
-              if (thisPromise !== promiseId) return
+              if (debounce == null) {
+                if (thisPromise !== promiseId) {
+                  return
+                }
+              } else {
+                if (thisPromise <= reflectedPromiseId) {
+                  return
+                }
+                reflectedPromiseId = thisPromise
+              }
               this[key] = value
             }).catch(err => {
-              if (thisPromise !== promiseId) return
+              if (debounce == null) {
+                if (thisPromise !== promiseId) {
+                  return
+                }
+              } else {
+                if (thisPromise <= reflectedPromiseId) {
+                  return
+                }
+                reflectedPromiseId = thisPromise
+              }
 
               if (pluginOptions.errorHandler === false) return
 
