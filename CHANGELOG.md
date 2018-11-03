@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.5.0](#v350)
 - [v3.4.0](#v340)
 - [v3.3.0](#v330)
 - [v3.2.1](#v321)
@@ -20,6 +21,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.5.0
+  * [#45](https://github.com/foxbenjaminfox/vue-async-computed/pull/45): add a status property `$asyncComputed` to each Vue instance with information about the status
+    of its async computed properties.
 
 ### v3.4.0
   * Add a `shouldUpdate` option, which can control when and if
