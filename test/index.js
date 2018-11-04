@@ -808,3 +808,15 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
     })
   })
 })
+
+test("Plain components with neither `data` nor `asyncComputed` still work (issue #50)", t => {
+  t.plan(1)
+  const vm = new Vue({
+    computed: {
+      a () {
+        return 1
+      }
+    }
+  })
+  t.equal(vm.a, 1)
+})
