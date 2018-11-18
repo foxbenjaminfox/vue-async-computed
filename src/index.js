@@ -24,7 +24,16 @@ const AsyncComputed = {
         const asyncComputed = this.$options.asyncComputed || {}
         this.$asyncComputed = {}
 
+        for (const key in this.$options.computed) {
+          if (this.$options.computed[key].asynchronous) {
+            asyncComputed[key] = this.$options.computed[key]
+            delete this.$options.computed[key]
+          }
+        }
+
         if (!Object.keys(asyncComputed).length) return
+
+        this.$options.asyncComputed = asyncComputed
 
         if (!this.$options.computed) this.$options.computed = {}
 
