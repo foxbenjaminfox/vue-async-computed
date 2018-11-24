@@ -15,6 +15,8 @@ export default class AsyncComputed {
 declare module "vue/types/options" {
 	interface ComputedOptions<T> {
 		asynchronous?: boolean;
+		default: T extends Promise<infer S> ? S : undefined;
+		lazy: T extends Promise<any> ? boolean : undefined;
 	}
 }
 
