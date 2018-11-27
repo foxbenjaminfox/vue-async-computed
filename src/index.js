@@ -101,7 +101,7 @@ const AsyncComputed = {
           this.$asyncComputed[key] = {
             exception: null,
             update: () => {
-              watcher(getterOnly(this.$options.asyncComputed[key])())
+              watcher(getterOnly(this.$options.asyncComputed[key]).apply(this))
             }
           }
           setAsyncState(this.$asyncComputed[key], 'updating')

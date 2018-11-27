@@ -809,6 +809,54 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
   })
 })
 
+test("$asyncComputed[name].update has the correct execution context", t => {
+  t.plan(8)
+  let addedValue = 1
+  const vm = new Vue({
+    data () {
+      return {
+        valueToReturn: 1,
+      }
+    },
+    asyncComputed: {
+      a () {
+        return new Promise(resolve => {
+          resolve(this.valueToReturn + addedValue)
+        })
+      },
+      b: {
+        get () {
+          return new Promise(resolve => {
+            resolve(this.valueToReturn + addedValue)
+          })
+        },
+      },
+    },
+  })
+
+  Vue.nextTick(() => {
+    //  case 1: a is a function
+    t.equal(vm.a, 2)
+    t.equal(vm.$asyncComputed['a'].state, 'success')
+    //  case 2: b is an object with a getter function
+    t.equal(vm.b, 2)
+    t.equal(vm.$asyncComputed['b'].state, 'success')
+
+    addedValue = 4
+
+    vm.$asyncComputed['a'].update()
+    t.equal(vm.$asyncComputed['a'].state, 'updating')
+
+    vm.$asyncComputed['b'].update()
+    t.equal(vm.$asyncComputed['b'].state, 'updating')
+
+    Vue.nextTick(() => {
+      t.equal(vm.a, 5)
+      t.equal(vm.b, 5)
+    })
+  })
+})
+
 test("Plain components with neither `data` nor `asyncComputed` still work (issue #50)", t => {
   t.plan(1)
   const vm = new Vue({
