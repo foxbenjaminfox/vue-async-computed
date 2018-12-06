@@ -17,20 +17,18 @@ test("Async computed values are computed", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve('done'), 10)
           })
         },
-        asynchronous: true,
       },
       b: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve(1337), 20)
           })
         },
-        asynchronous: true,
       }
     }
   })
@@ -49,10 +47,9 @@ test("An async computed value which is an pre-resolved promise updates at the ne
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return Promise.resolve('done')
         },
-        asynchronous: true,
       }
     }
   })
@@ -65,12 +62,11 @@ test("Sync and async computed data work together", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve('done'), 10)
           })
         },
-        asynchronous: true,
       },
       b () {
         return 0
@@ -92,21 +88,19 @@ test("Async values are properly recalculated", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           const data = this.x
           return new Promise(resolve => {
             setTimeout(() => resolve(data), 10)
           })
         },
-        asynchronous: true,
       },
       b: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve('done'), 40)
           })
         },
-        asynchronous: true,
       }
     },
     data: {
@@ -135,12 +129,11 @@ test("Old async values are properly invalidated", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve(this.waitTime), this.waitTime)
           })
         },
-        asynchronous: true,
       }
     },
     data: {
@@ -178,10 +171,9 @@ test("Errors in computed properties are handled", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return Promise.reject(new Error('error'))
         },
-        asynchronous: true
       }
     }
   })
@@ -199,11 +191,10 @@ test("Errors in computed properties are handled, with useRawError", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           // eslint-disable-next-line prefer-promise-reject-errors
           return Promise.reject('error')
         },
-        asynchronous: true,
       }
     }
   })
@@ -222,31 +213,27 @@ test("Multiple asyncComputed objects are handled the same as normal computed pro
     mixins: [{
       computed: {
         a: {
-          get () {
+          asynchronous () {
             return Promise.resolve('mixin-a')
           },
-          asynchronous: true,
         },
         b: {
-          get () {
+          asynchronous () {
             return Promise.resolve('mixin-b')
           },
-          asynchronous: true,
         }
       }
     }],
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return Promise.resolve('vm-a')
         },
-        asynchronous: true,
       },
       c: {
-        get () {
+        asynchronous () {
           return Promise.resolve('vm-c')
         },
-        asynchronous: true,
       }
     }
   })
@@ -262,27 +249,26 @@ test("Async computed values can have defaults", t => {
   const vm = new Vue({
     computed: {
       x: {
-        default: false,
-        get () {
-          return Promise.resolve(true)
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(true)
+          },
+          default: false,
+        }
       },
       y: {
-        get () {
+        asynchronous () {
           return Promise.resolve(true)
         },
-        asynchronous: true,
       },
       z: {
-        get () {
+        asynchronous () {
           return Promise.resolve(true)
         },
-        asynchronous: true,
       }
     }
   })
-  t.equal(vm.x, false, 'x should default to true')
+  t.equal(vm.x, false, 'x should default to false')
   t.equal(vm.y, null, 'y doesn\'t have a default')
   t.equal(vm.z, null, 'z doesn\'t have a default despite being defined with an object')
   Vue.nextTick(() => {
@@ -300,18 +286,20 @@ test("Default values can be functions", t => {
     },
     computed: {
       y: {
-        default () { return 2 },
-        get () {
-          return Promise.resolve(3)
-        },
-        asynchronous: true,
+        asynchronous: {
+          default () { return 2 },
+          get () {
+            return Promise.resolve(3)
+          },
+        }
       },
       z: {
-        default () { return this.x },
-        get () {
-          return Promise.resolve(4)
-        },
-        asynchronous: true,
+        asynchronous: {
+          default () { return this.x },
+          get () {
+            return Promise.resolve(4)
+          },
+        }
       }
     }
   })
@@ -331,13 +319,14 @@ test("Async computed values can be written to, and then will be properly overrid
     },
     computed: {
       y: {
-        get () {
-          this.y = this.x + 1
-          return new Promise(resolve => {
-            setTimeout(() => resolve(this.x), 10)
-          })
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            this.y = this.x + 1
+            return new Promise(resolve => {
+              setTimeout(() => resolve(this.x), 10)
+            })
+          },
+        }
       }
     }
   })
@@ -368,14 +357,15 @@ test("Watchers rerun the computation when a value changes", t => {
     },
     computed: {
       z: {
-        get () {
-          return Promise.resolve(i + this.y)
-        },
-        watch () {
-          // eslint-disable-next-line no-unused-expressions
-          this.x
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(i + this.y)
+          },
+          watch () {
+            // eslint-disable-next-line no-unused-expressions
+            this.x
+          },
+        }
       }
     }
   })
@@ -408,13 +398,14 @@ test("shouldUpdate controls when to rerun the computation when a value changes",
     },
     computed: {
       z: {
-        get () {
-          return Promise.resolve(i + this.y)
-        },
-        shouldUpdate () {
-          return this.x % 2 === 0
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(i + this.y)
+          },
+          shouldUpdate () {
+            return this.x % 2 === 0
+          },
+        }
       }
     }
   })
@@ -464,17 +455,18 @@ test("Watchers trigger but shouldUpdate can still block their updates", t => {
     },
     computed: {
       z: {
-        get () {
-          return Promise.resolve(i + this.y)
-        },
-        watch () {
-          // eslint-disable-next-line no-unused-expressions
-          this.x
-        },
-        shouldUpdate () {
-          return this.canUpdate
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(i + this.y)
+          },
+          watch () {
+            // eslint-disable-next-line no-unused-expressions
+            this.x
+          },
+          shouldUpdate () {
+            return this.canUpdate
+          },
+        }
       }
     }
   })
@@ -518,10 +510,11 @@ test("The default default value can be set in the plugin options", t => {
   const vm = new Vue({
     computed: {
       x: {
-        get () {
-          return Promise.resolve(0)
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(0)
+          },
+        }
       }
     }
   })
@@ -538,10 +531,11 @@ test("The default default value can be set to undefined in the plugin options", 
   const vm = new Vue({
     computed: {
       x: {
-        get () {
-          return Promise.resolve(0)
-        },
-        asynchronous: true,
+        asynchronous: {
+          get () {
+            return Promise.resolve(0)
+          },
+        }
       }
     }
   })
@@ -557,10 +551,9 @@ test("Handle an async computed value returning synchronously", t => {
   const vm = new Vue({
     computed: {
       x: {
-        get () {
+        asynchronous () {
           return 1
         },
-        asynchronous: true,
       }
     }
   })
@@ -575,14 +568,16 @@ test("Work correctly with Vue.extend", t => {
   const SubVue = Vue.extend({
     computed: {
       x: {
-        get () {
-          return Promise.resolve(1)
+        asynchronous: {
+          get () {
+            return Promise.resolve(1)
+          },
         },
-        asynchronous: true,
       }
     }
   })
   const vm = new SubVue({})
+  console.log(vm.$options.computed.x)
 
   t.equal(vm.x, null)
   Vue.nextTick(() => {
@@ -597,12 +592,13 @@ test("Async computed values can be calculated lazily", t => {
   const vm = new Vue({
     computed: {
       a: {
-        lazy: true,
-        get () {
-          called = true
-          return Promise.resolve(10)
-        },
-        asynchronous: true,
+        asynchronous: {
+          lazy: true,
+          get () {
+            called = true
+            return Promise.resolve(10)
+          },
+        }
       }
     }
   })
@@ -629,12 +625,13 @@ test("Async computed values aren't lazy with { lazy: false }", t => {
   const vm = new Vue({
     computed: {
       a: {
-        lazy: false,
-        get () {
-          called = true
-          return Promise.resolve(10)
-        },
-        asynchronous: true,
+        asynchronous: {
+          lazy: false,
+          get () {
+            called = true
+            return Promise.resolve(10)
+          },
+        }
       }
     }
   })
@@ -654,13 +651,14 @@ test("Async computed values can be calculated lazily with a default", t => {
   const vm = new Vue({
     computed: {
       a: {
-        lazy: true,
-        default: 3,
-        get () {
-          called = true
-          return Promise.resolve(4)
-        },
-        asynchronous: true,
+        asynchronous: {
+          lazy: true,
+          default: 3,
+          get () {
+            called = true
+            return Promise.resolve(4)
+          },
+        }
       }
     }
   })
@@ -691,7 +689,7 @@ test("Underscore prefixes work (issue #33)", t => {
         return 2
       },
       _async_a: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => {
               resolve(this.sync_a)
@@ -699,15 +697,13 @@ test("Underscore prefixes work (issue #33)", t => {
             }, 10)
           })
         },
-        asynchronous: true,
       },
       async_b: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             setTimeout(() => resolve(this._sync_b), 10)
           })
         },
-        asynchronous: true,
       }
     },
     data () {
@@ -738,24 +734,26 @@ test("shouldUpdate works with lazy", t => {
     },
     computed: {
       b: {
-        lazy: true,
-        get () {
-          return Promise.resolve(this.a)
-        },
-        shouldUpdate () {
-          return this.x
-        },
-        asynchronous: true,
+        asynchronous: {
+          lazy: true,
+          get () {
+            return Promise.resolve(this.a)
+          },
+          shouldUpdate () {
+            return this.x
+          },
+        }
       },
       c: {
-        lazy: true,
-        get () {
-          return Promise.resolve(this.a)
-        },
-        shouldUpdate () {
-          return this.y
-        },
-        asynchronous: true,
+        asynchronous: {
+          lazy: true,
+          get () {
+            return Promise.resolve(this.a)
+          },
+          shouldUpdate () {
+            return this.y
+          },
+        }
       }
     }
   })
@@ -800,16 +798,14 @@ test("$asyncComputed[name] is created for all async computed properties", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return Promise.resolve(1)
         },
-        asynchronous: true,
       },
       b: {
-        get () {
+        asynchronous () {
           return Promise.resolve(2)
         },
-        asynchronous: true,
       }
     }
   })
@@ -838,11 +834,10 @@ test("$asyncComputed[name] handles errors and captures exceptions", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           // eslint-disable-next-line prefer-promise-reject-errors
           return Promise.reject('error-message')
         },
-        asynchronous: true,
       }
     }
   })
@@ -864,12 +859,11 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
   const vm = new Vue({
     computed: {
       a: {
-        get () {
+        asynchronous () {
           return new Promise(resolve => {
             resolve(valueToReturn)
           })
         },
-        asynchronous: true,
       }
     }
   })

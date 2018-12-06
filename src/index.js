@@ -20,14 +20,12 @@ const AsyncComputed = {
 
     Vue.mixin({
       beforeCreate () {
-        const optionData = this.$options.data
         const asyncComputed = this.$options.asyncComputed || {}
         this.$asyncComputed = {}
 
         for (const key in this.$options.computed) {
           if (this.$options.computed[key].asynchronous) {
-            asyncComputed[key] = this.$options.computed[key]
-            delete this.$options.computed[key]
+            asyncComputed[key] = this.$options.computed[key].asynchronous
           }
         }
 
@@ -40,35 +38,24 @@ const AsyncComputed = {
         for (const key in asyncComputed) {
           const getter = getterFn(key, this.$options.asyncComputed[key])
           this.$options.computed[prefix + key] = getter
+          const getset = makeLazyComputed(key)
+          this.$options.computed[key].get = getset.get
+          this.$options.computed[key].set = getset.set
         }
-
-        this.$options.data = function vueAsyncComputedInjectedDataFn () {
-          const data = (
-            (typeof optionData === 'function')
-              ? optionData.call(this)
-              : optionData
-          ) || {}
-          for (const key in asyncComputed) {
-            const item = this.$options.asyncComputed[key]
-            if (isComputedLazy(item)) {
-              initLazy(data, key)
-              this.$options.computed[key] = makeLazyComputed(key)
-            } else {
-              data[key] = null
-            }
-          }
-          return data
+      },
+      data () {
+        let ret = {}
+        const asyncComputed = this.$options.asyncComputed || {}
+        for (const key in asyncComputed) {
+          initLazy(ret, key)
         }
+        return ret
       },
       created () {
         for (const key in this.$options.asyncComputed || {}) {
           const item = this.$options.asyncComputed[key],
                 value = generateDefault.call(this, item, pluginOptions)
-          if (isComputedLazy(item)) {
-            silentSetLazy(this, key, value)
-          } else {
-            this[key] = value
-          }
+          silentSetLazy(this, key, value)
         }
 
         for (const key in this.$options.asyncComputed || {}) {
@@ -88,7 +75,7 @@ const AsyncComputed = {
             newPromise.then(value => {
               if (thisPromise !== promiseId) return
               setAsyncState(this.$asyncComputed[key], 'success')
-              this[key] = value
+              silentSetLazy(this, key, value)
             }).catch(err => {
               if (thisPromise !== promiseId) return
 

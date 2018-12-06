@@ -1,7 +1,7 @@
 import Vue, { PluginFunction } from "vue";
 
 export interface IAsyncComputedOptions {
-	errorHandler?: (error: string | Error) => void;
+	errorHandler?: (error: string[]) => void;
 	useRawError?: boolean;
 	default?: any;
 }
@@ -14,9 +14,11 @@ export default class AsyncComputed {
 
 declare module "vue/types/options" {
 	interface ComputedOptions<T> {
-		asynchronous?: boolean;
-		default: T extends Promise<infer S> ? S : undefined;
-		lazy: T extends Promise<any> ? boolean : undefined;
+		asynchronous?: (() => T | Promise<T>) | {
+			get: (() => T | Promise<T>);
+			default?: T;
+			lazy?: boolean;
+		};
 	}
 }
 
