@@ -6,3 +6,4 @@ dist
 tmp
 coverage
 npm-debug.log
+.idea
