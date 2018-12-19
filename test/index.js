@@ -25,8 +25,8 @@ test("Async computed values are computed", t => {
         return new Promise(resolve => {
           setTimeout(() => resolve(1337), 20)
         })
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, null)
   t.equal(vm.b, null)
@@ -44,8 +44,8 @@ test("An async computed value which is an pre-resolved promise updates at the ne
     asyncComputed: {
       a () {
         return Promise.resolve('done')
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, null)
   Vue.nextTick(() => t.equal(vm.a, 'done'))
@@ -59,13 +59,13 @@ test("Sync and async computed data work together", t => {
         return new Promise(resolve => {
           setTimeout(() => resolve('done'), 10)
         })
-      },
+      }
     },
     computed: {
       b () {
         return 0
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, null)
 
@@ -91,11 +91,11 @@ test("Async values are properly recalculated", t => {
         return new Promise(resolve => {
           setTimeout(() => resolve('done'), 40)
         })
-      },
+      }
     },
     data: {
-      x: 0,
-    },
+      x: 0
+    }
   })
   t.equal(vm.a, null)
   t.equal(vm.x, 0)
@@ -122,16 +122,14 @@ test("Old async values are properly invalidated", t => {
         return new Promise(resolve => {
           setTimeout(() => resolve(this.waitTime), this.waitTime)
         })
-      },
+      }
     },
     data: {
-      waitTime: 40,
-    },
+      waitTime: 40
+    }
   })
   t.equal(vm.a, null)
-  setTimeout(() => {
-    vm.waitTime = 10
-  }, 10)
+  setTimeout(() => { vm.waitTime = 10 }, 10)
   vm.$watch('a', function (val) {
     t.equal(val, 10) // Not 40, even though we don't cancel the $watch
   })
@@ -143,11 +141,11 @@ test("Having only sync computed data still works", t => {
     computed: {
       a () {
         return this.x
-      },
+      }
     },
     data: {
-      x: 2,
-    },
+      x: 2
+    }
   })
   t.equal(vm.a, 2)
   vm.$watch('a', function (val) {
@@ -162,8 +160,8 @@ test("Errors in computed properties are handled", t => {
     asyncComputed: {
       a () {
         return Promise.reject(new Error('error'))
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, null)
   pluginOptions.errorHandler = stack => {
@@ -181,8 +179,8 @@ test("Errors in computed properties are handled, with useRawError", t => {
       a () {
         // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('error')
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, null)
   pluginOptions.errorHandler = err => {
@@ -203,8 +201,8 @@ test("Multiple asyncComputed objects are handled the same as normal computed pro
         },
         b () {
           return Promise.resolve('mixin-b')
-        },
-      },
+        }
+      }
     }],
     asyncComputed: {
       a () {
@@ -212,8 +210,8 @@ test("Multiple asyncComputed objects are handled the same as normal computed pro
       },
       c () {
         return Promise.resolve('vm-c')
-      },
-    },
+      }
+    }
   })
   Vue.nextTick(() => {
     t.equal(vm.a, 'vm-a')
@@ -230,7 +228,7 @@ test("Async computed values can have defaults", t => {
         default: false,
         get () {
           return Promise.resolve(true)
-        },
+        }
       },
       y () {
         return Promise.resolve(true)
@@ -238,9 +236,9 @@ test("Async computed values can have defaults", t => {
       z: {
         get () {
           return Promise.resolve(true)
-        },
-      },
-    },
+        }
+      }
+    }
   })
   t.equal(vm.x, false, 'x should default to true')
   t.equal(vm.y, null, 'y doesn\'t have a default')
@@ -256,26 +254,22 @@ test("Default values can be functions", t => {
   t.plan(4)
   const vm = new Vue({
     data: {
-      x: 1,
+      x: 1
     },
     asyncComputed: {
       y: {
-        default () {
-          return 2
-        },
+        default () { return 2 },
         get () {
           return Promise.resolve(3)
-        },
+        }
       },
       z: {
-        default () {
-          return this.x
-        },
+        default () { return this.x },
         get () {
           return Promise.resolve(4)
-        },
-      },
-    },
+        }
+      }
+    }
   })
   t.equal(vm.y, 2)
   t.equal(vm.z, 1)
@@ -289,7 +283,7 @@ test("Async computed values can be written to, and then will be properly overrid
   t.plan(5)
   const vm = new Vue({
     data: {
-      x: 1,
+      x: 1
     },
     asyncComputed: {
       y () {
@@ -297,8 +291,8 @@ test("Async computed values can be written to, and then will be properly overrid
         return new Promise(resolve => {
           setTimeout(() => resolve(this.x), 10)
         })
-      },
-    },
+      }
+    }
   })
   Vue.nextTick(() => {
     t.equal(vm.y, 2)
@@ -333,9 +327,9 @@ test("Watchers rerun the computation when a value changes", t => {
         watch () {
           // eslint-disable-next-line no-unused-expressions
           this.x
-        },
-      },
-    },
+        }
+      }
+    }
   })
   t.equal(vm.z, null)
   Vue.nextTick(() => {
@@ -371,9 +365,9 @@ test("shouldUpdate controls when to rerun the computation when a value changes",
         },
         shouldUpdate () {
           return this.x % 2 === 0
-        },
-      },
-    },
+        }
+      }
+    }
   })
   t.equal(vm.z, null)
   Vue.nextTick(() => {
@@ -430,9 +424,9 @@ test("Watchers trigger but shouldUpdate can still block their updates", t => {
         },
         shouldUpdate () {
           return this.canUpdate
-        },
-      },
-    },
+        }
+      }
+    }
   })
   t.equal(vm.z, null)
   Vue.nextTick(() => {
@@ -475,8 +469,8 @@ test("The default default value can be set in the plugin options", t => {
     asyncComputed: {
       x () {
         return Promise.resolve(0)
-      },
-    },
+      }
+    }
   })
   t.equal(vm.x, 53)
   Vue.nextTick(() => {
@@ -492,8 +486,8 @@ test("The default default value can be set to undefined in the plugin options", 
     asyncComputed: {
       x () {
         return Promise.resolve(0)
-      },
-    },
+      }
+    }
   })
   t.equal(vm.x, undefined)
   Vue.nextTick(() => {
@@ -508,8 +502,8 @@ test("Handle an async computed value returning synchronously", t => {
     asyncComputed: {
       x () {
         return 1
-      },
-    },
+      }
+    }
   })
   t.equal(vm.x, null)
   Vue.nextTick(() => {
@@ -523,8 +517,8 @@ test("Work correctly with Vue.extend", t => {
     asyncComputed: {
       x () {
         return Promise.resolve(1)
-      },
-    },
+      }
+    }
   })
   const vm = new SubVue({})
 
@@ -545,9 +539,9 @@ test("Async computed values can be calculated lazily", t => {
         get () {
           called = true
           return Promise.resolve(10)
-        },
-      },
-    },
+        }
+      }
+    }
   })
 
   t.equal(called, false)
@@ -576,9 +570,9 @@ test("Async computed values aren't lazy with { lazy: false }", t => {
         get () {
           called = true
           return Promise.resolve(10)
-        },
-      },
-    },
+        }
+      }
+    }
   })
 
   t.equal(called, true)
@@ -601,9 +595,9 @@ test("Async computed values can be calculated lazily with a default", t => {
         get () {
           called = true
           return Promise.resolve(4)
-        },
-      },
-    },
+        }
+      }
+    }
   })
 
   t.equal(called, false)
@@ -630,10 +624,10 @@ test("Underscore prefixes work (issue #33)", t => {
       },
       _sync_b () {
         return 2
-      },
+      }
     },
     data () {
-      return {a_complete: false}
+      return { a_complete: false }
     },
     asyncComputed: {
       _async_a () {
@@ -648,8 +642,8 @@ test("Underscore prefixes work (issue #33)", t => {
         return new Promise(resolve => {
           setTimeout(() => resolve(this._sync_b), 10)
         })
-      },
-    },
+      }
+    }
   })
   t.equal(vm._async_a, null)
   t.equal(vm.async_b, null)
@@ -681,7 +675,7 @@ test("shouldUpdate works with lazy", t => {
         },
         shouldUpdate () {
           return this.x
-        },
+        }
       },
       c: {
         lazy: true,
@@ -690,9 +684,9 @@ test("shouldUpdate works with lazy", t => {
         },
         shouldUpdate () {
           return this.y
-        },
-      },
-    },
+        }
+      }
+    }
   })
 
   Vue.nextTick(() => {
@@ -725,7 +719,8 @@ test("shouldUpdate works with lazy", t => {
 
 test("$asyncComputed is empty if there are no async computed properties", t => {
   t.plan(1)
-  const vm = new Vue({})
+  const vm = new Vue({
+  })
   t.deepEqual(vm.$asyncComputed, {})
 })
 
@@ -738,8 +733,8 @@ test("$asyncComputed[name] is created for all async computed properties", t => {
       },
       b () {
         return Promise.resolve(2)
-      },
-    },
+      }
+    }
   })
   t.deepEqual(Object.keys(vm.$asyncComputed), ['a', 'b'])
   t.equal(vm.$asyncComputed['a'].state, 'updating')
@@ -768,8 +763,8 @@ test("$asyncComputed[name] handles errors and captures exceptions", t => {
       a () {
         // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('error-message')
-      },
-    },
+      }
+    }
   })
   t.equal(vm.$asyncComputed['a'].state, 'updating')
   pluginOptions.errorHandler = stack => {
@@ -792,8 +787,8 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
         return new Promise(resolve => {
           resolve(valueToReturn)
         })
-      },
-    },
+      }
+    }
   })
 
   Vue.nextTick(() => {
@@ -820,8 +815,8 @@ test("Plain components with neither `data` nor `asyncComputed` still work (issue
     computed: {
       a () {
         return 1
-      },
-    },
+      }
+    }
   })
   t.equal(vm.a, 1)
 })
