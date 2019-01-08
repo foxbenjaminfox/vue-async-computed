@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.5.1](#v351)
 - [v3.5.0](#v350)
 - [v3.4.0](#v340)
 - [v3.3.0](#v330)
@@ -21,6 +22,11 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.5.1
+  * [#54](https://github.com/foxbenjaminfox/vue-async-computed/pull/54): Fix the missing execution context during recomputations triggered through the `.update` method in `$asyncComputed`.
+  * [#58](https://github.com/foxbenjaminfox/vue-async-computed/pull/58): Fix the reactivity of the `$asyncComputed` object.
+  * [#59](https://github.com/foxbenjaminfox/vue-async-computed/pull/59): Distribute also as an ESM module.
 
 ### v3.5.0
   * [#45](https://github.com/foxbenjaminfox/vue-async-computed/pull/45): add a status property `$asyncComputed` to each Vue instance with information about the status
