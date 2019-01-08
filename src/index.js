@@ -19,14 +19,20 @@ const AsyncComputed = {
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
     Vue.mixin({
+      data () {
+        return {
+          _asyncComputed: {},
+        }
+      },
       beforeCreate () {
         const optionData = this.$options.data
         const asyncComputed = this.$options.asyncComputed || {}
-        this.$asyncComputed = {}
-
-        if (!Object.keys(asyncComputed).length) return
 
         if (!this.$options.computed) this.$options.computed = {}
+
+        this.$options.computed.$asyncComputed = () => this.$data._asyncComputed
+
+        if (!Object.keys(asyncComputed).length) return
 
         for (const key in asyncComputed) {
           const getter = getterFn(key, this.$options.asyncComputed[key])
@@ -74,17 +80,17 @@ const AsyncComputed = {
             if (!newPromise || !newPromise.then) {
               newPromise = Promise.resolve(newPromise)
             }
-            setAsyncState(this.$asyncComputed[key], 'updating')
+            setAsyncState(this, key, 'updating')
 
             newPromise.then(value => {
               if (thisPromise !== promiseId) return
-              setAsyncState(this.$asyncComputed[key], 'success')
+              setAsyncState(this, key, 'success')
               this[key] = value
             }).catch(err => {
               if (thisPromise !== promiseId) return
 
-              setAsyncState(this.$asyncComputed[key], 'error')
-              this.$asyncComputed[key].exception = err
+              setAsyncState(this, key, 'error')
+              Vue.set(this.$data._asyncComputed[key], 'exception', err)
               if (pluginOptions.errorHandler === false) return
 
               const handler = (pluginOptions.errorHandler === undefined)
@@ -98,13 +104,13 @@ const AsyncComputed = {
               }
             })
           }
-          this.$asyncComputed[key] = {
+          Vue.set(this.$data._asyncComputed, key, {
             exception: null,
             update: () => {
               watcher(getterOnly(this.$options.asyncComputed[key]).apply(this))
             }
-          }
-          setAsyncState(this.$asyncComputed[key], 'updating')
+          })
+          setAsyncState(this, key, 'updating')
           this.$watch(prefix + key, watcher, { immediate: true })
         }
       }
@@ -112,11 +118,11 @@ const AsyncComputed = {
   }
 }
 
-function setAsyncState (stateObject, state) {
-  stateObject.state = state
-  stateObject.updating = state === 'updating'
-  stateObject.error = state === 'error'
-  stateObject.success = state === 'success'
+function setAsyncState (vm, stateObject, state) {
+  vm.$set(vm.$data._asyncComputed[stateObject], 'state', state)
+  vm.$set(vm.$data._asyncComputed[stateObject], 'updating', state === 'updating')
+  vm.$set(vm.$data._asyncComputed[stateObject], 'error', state === 'error')
+  vm.$set(vm.$data._asyncComputed[stateObject], 'success', state === 'success')
 }
 
 function getterOnly (fn) {
