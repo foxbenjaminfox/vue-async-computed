@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.5.2](#v352)
 - [v3.5.1](#v351)
 - [v3.5.0](#v350)
 - [v3.4.0](#v340)
@@ -22,6 +23,9 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.5.2
+  * Point to a pre-transpiled version of the library as the `module` field in package.json.
 
 ### v3.5.1
   * [#54](https://github.com/foxbenjaminfox/vue-async-computed/pull/54): Fix the missing execution context during recomputations triggered through the `.update` method in `$asyncComputed`.
