@@ -39,10 +39,10 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = getter
         }
 
-        this.$options.data = function vueAsyncComputedInjectedDataFn () {
+        this.$options.data = function vueAsyncComputedInjectedDataFn (vm) {
           const data = (
             (typeof optionData === 'function')
-              ? optionData.call(this)
+              ? optionData.call(this, vm)
               : optionData
           ) || {}
           for (const key in asyncComputed) {

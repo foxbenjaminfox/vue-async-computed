@@ -868,3 +868,20 @@ test("Plain components with neither `data` nor `asyncComputed` still work (issue
   })
   t.equal(vm.a, 1)
 })
+
+test('Data of component still work as function and got vm', t => {
+  t.plan(1)
+  let _vmContext = null
+  const vm = new Vue({
+    data (vmContext) {
+      _vmContext = vmContext
+    },
+    asyncComputed: {
+      async a () {
+        return Promise.resolve(1)
+      },
+    },
+
+  })
+  t.equal(vm, _vmContext)
+})
