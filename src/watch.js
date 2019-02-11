@@ -13,8 +13,13 @@ const getGetterWatchedByArray = computedAsyncProperty =>
           for (let part of splittedByDot) {
             start = start[part]
           }
+<<<<<<< HEAD
         } catch (error) {
           console.error('computedAsyncPlugin: bad path: ', key)
+=======
+        } catch (eror) {
+          console.error('computedAsyncPlugin: bad path: ', splittedByDot)
+>>>>>>> d75f8db97688a3dc675accdedd7d9ea972836b43
           throw error
         }
       }
