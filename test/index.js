@@ -885,3 +885,128 @@ test('Data of component still work as function and got vm', t => {
   })
   t.equal(vm, _vmContext)
 })
+
+
+test("Watch as a function", t => {
+  t.plan(4)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      y: 2,
+      obj: {
+        t: 0
+      }
+    },
+    asyncComputed: {
+      z: {
+        get () {
+          return Promise.resolve(i + this.y)
+        },
+        watch(){
+          this.obj.t
+        }
+      }
+    }
+  })
+  t.equal(vm.z, null)
+  Vue.nextTick(() => {
+    t.equal(vm.z, 2)
+    i++
+    vm.obj.t--
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter function
+      t.equal(vm.z, 2)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and z is 3.
+        t.equal(vm.z, 3)
+      })
+    })
+  })
+})
+
+
+test("Watchers as array with nested path rerun the computation when a value changes", t => {
+  t.plan(4)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      y: 2,
+      obj: {
+        t: 0
+      }
+    },
+    asyncComputed: {
+      z: {
+        get () {
+          return Promise.resolve(i + this.y)
+        },
+        watch: ['obj.t']
+      }
+    }
+  })
+  t.equal(vm.z, null)
+  Vue.nextTick(() => {
+    t.equal(vm.z, 2)
+    i++
+    vm.obj.t--
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter function
+      t.equal(vm.z, 2)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and z is 3.
+        t.equal(vm.z, 3)
+      })
+    })
+  })
+})
+
+test("Watch as array with more then one value", t => {
+  t.plan(4)
+  let i = 0
+  const vm = new Vue({
+    data: {
+      y: 2,
+      obj: {
+        t: 0
+      },
+      r:0
+    },
+    asyncComputed: {
+      z: {
+        get () {
+          return Promise.resolve(i + this.y)
+        },
+        watch: ['obj.t', 'r']
+      }
+    }
+  })
+  t.equal(vm.z, null)
+  Vue.nextTick(() => {
+    t.equal(vm.z, 2)
+    i++
+    vm.obj.t--
+    Vue.nextTick(() => {
+      // This tick, Vue registers the change
+      // in the watcher, and reevaluates
+      // the getter function
+      t.equal(vm.z, 2)
+      Vue.nextTick(() => {
+        // Now in this tick the promise has
+        // resolved, and z is 3.
+        t.equal(vm.z, 3)
+
+        i++
+        vm.r--
+        Vue.nextTick(()=>{
+          t.equal(vm.z,4)
+        })
+      })
+    })
+  })
+})
