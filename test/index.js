@@ -967,7 +967,7 @@ test("Watchers as array with nested path rerun the computation when a value chan
 })
 
 test("Watch as array with more then one value", t => {
-  t.plan(4)
+  t.plan(5)
   let i = 0
   const vm = new Vue({
     data: {
@@ -990,6 +990,7 @@ test("Watch as array with more then one value", t => {
   Vue.nextTick(() => {
     t.equal(vm.z, 2)
     i++
+    // checking for nested property
     vm.obj.t--
     Vue.nextTick(() => {
       // This tick, Vue registers the change
@@ -1002,9 +1003,12 @@ test("Watch as array with more then one value", t => {
         t.equal(vm.z, 3)
 
         i++
+        // one level and multiple watchers
         vm.r--
         Vue.nextTick(()=>{
-          t.equal(vm.z,4)
+          Vue.nextTick(() => {
+            t.equal(vm.z,4)
+          })
         })
       })
     })
