@@ -348,7 +348,7 @@ new Vue({
 
 ## Computation status
 
-For each async comptued property, an object is added to `$asyncComputed` that contains information about the current computation state of that object. This object contains the following properties:
+For each async computed property, an object is added to `$asyncComputed` that contains information about the current computation state of that object. This object contains the following properties:
 
 ```js
 {
