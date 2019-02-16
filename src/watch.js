@@ -1,7 +1,6 @@
 const getGetterWatchedByArray = computedAsyncProperty =>
   function getter () {
     for (const key of computedAsyncProperty.watch) {
-      if (typeof key !== 'string') throw new Error('AsyncComputed: watch elemnts must be strings')
       // Check if nested key is watched.
       const splittedByDot = key.split('.')
       if (splittedByDot.length === 1) {
@@ -34,6 +33,11 @@ export function getWatchedGetter (computedAsyncProperty) {
   if (typeof computedAsyncProperty.watch === 'function') {
     return getGetterWatchedByFunction(computedAsyncProperty)
   } else if (Array.isArray(computedAsyncProperty.watch)) {
+    for (const key of computedAsyncProperty.watch) {
+      if (typeof key !== 'string') {
+        throw new Error('AsyncComputed: watch elemnts must be strings')
+      }
+    }
     return getGetterWatchedByArray(computedAsyncProperty)
   } else {
     throw Error('AsyncComputed: watch should be function or an array')
