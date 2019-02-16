@@ -6,6 +6,8 @@ import {
   silentGetLazy,
   silentSetLazy,
 } from './lazy'
+import { getWatchedGetter } from './watch'
+
 
 const prefix = '_async_computed$'
 const DidNotUpdate = typeof Symbol === 'function' ? Symbol('did-not-update') : {}
@@ -137,11 +139,7 @@ function getterFn (key, fn) {
   let getter = fn.get
 
   if (fn.hasOwnProperty('watch')) {
-    const previousGetter = getter
-    getter = function getter () {
-      fn.watch.call(this)
-      return previousGetter.call(this)
-    }
+    getter = getWatchedGetter(fn)
   }
 
   if (fn.hasOwnProperty('shouldUpdate')) {
