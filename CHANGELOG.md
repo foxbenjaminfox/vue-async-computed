@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.6.1](#v361)
 - [v3.6.0](#v360)
 - [v3.5.2](#v352)
 - [v3.5.1](#v351)
@@ -24,6 +25,9 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.6.1
+  * Fix for browsers that don't support `Symbol.iterator`.
 
 ### v3.6.0
   * Fix bug in handling the argument to the generated `data` function.
