@@ -886,7 +886,6 @@ test('Data of component still work as function and got vm', t => {
   t.equal(vm, _vmContext)
 })
 
-
 test("Watch as a function", t => {
   t.plan(4)
   let i = 0
@@ -902,7 +901,8 @@ test("Watch as a function", t => {
         get () {
           return Promise.resolve(i + this.y)
         },
-        watch(){
+        watch () {
+          // eslint-disable-next-line no-unused-expressions
           this.obj.t
         }
       }
@@ -926,7 +926,6 @@ test("Watch as a function", t => {
     })
   })
 })
-
 
 test("Watchers as array with nested path rerun the computation when a value changes", t => {
   t.plan(4)
@@ -975,7 +974,7 @@ test("Watch as array with more then one value", t => {
       obj: {
         t: 0
       },
-      r:0
+      r: 0
     },
     asyncComputed: {
       z: {
@@ -1005,9 +1004,9 @@ test("Watch as array with more then one value", t => {
         i++
         // one level and multiple watchers
         vm.r--
-        Vue.nextTick(()=>{
+        Vue.nextTick(() => {
           Vue.nextTick(() => {
-            t.equal(vm.z,4)
+            t.equal(vm.z, 4)
           })
         })
       })

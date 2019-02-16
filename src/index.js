@@ -8,7 +8,6 @@ import {
 } from './lazy'
 import { getWatchedGetter } from './watch'
 
-
 const prefix = '_async_computed$'
 const DidNotUpdate = typeof Symbol === 'function' ? Symbol('did-not-update') : {}
 
