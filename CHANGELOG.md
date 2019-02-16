@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.6.0](#v360)
 - [v3.5.2](#v352)
 - [v3.5.1](#v351)
 - [v3.5.0](#v350)
@@ -23,6 +24,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.6.0
+  * Fix bug in handling the argument to the generated `data` function.
+  * [#66](https://github.com/foxbenjaminfox/vue-async-computed/pull/66) Add option for `watch` to be an array of property paths instead of a function.
 
 ### v3.5.2
   * Point to a pre-transpiled version of the library as the `module` field in package.json.

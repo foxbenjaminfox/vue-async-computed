@@ -102,7 +102,7 @@ Alternately, you can link it directly from a CDN:
   That will always point to the latest version of vue-async-computed.
   You probably want to instead pin it to a specific version:
 -->
-<script src="https://unpkg.com/vue-async-computed@3.5.2"></script>
+<script src="https://unpkg.com/vue-async-computed@3.6.0"></script>
 ```
 
 When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
@@ -236,9 +236,9 @@ Just like normal computed properties, async computed properties keep track of th
 recalculated if those dependencies change. But often you'll have an async computed property you'll want to run again
 without any of its (local) dependencies changing, such as for instance the data may have changed in the database.
 
-You can set up a `watch` function, whose purpose is to set up listeners on additional dependencies. Your async computed
-property will then be recalculated also if any of the watched dependencies change, in addition to the real dependencies
-the property itself has:
+You can set up a `watch` property, listing the additional dependencies to watch.
+Your async computed property will then be recalculated also if any of the watched
+dependencies change, in addition to the real dependencies the property itself has:
 ```js
 
 new Vue({
@@ -255,13 +255,12 @@ new Vue({
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
       },
-      watch () {
-        this.timesPostHasBeenUpdated
-      }
+      watch: ['timesPostHasBeenUpdated']
     }
   }
 }
 ```
+Just like with Vue's normal `watch`, you can use a dotted path in order to watch a nested property. For example, `watch: ['a.b.c', 'd.e']` would declare a dependancy on `this.a.b.c` and on `this.d.e`.
 
 You can trigger re-computation of an async computed property manually, e.g. to re-try if an error occured during evaluation. This should be avoided if you are able to achieve the same result using a watched property.
 
