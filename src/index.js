@@ -7,12 +7,12 @@ import {
   silentSetLazy,
 } from './lazy'
 import { getWatchedGetter } from './watch'
+import { getGetterWithShouldUpdate, shouldNotUpdate } from './shouldUpdate'
 
 const prefix = '_async_computed$'
-const DidNotUpdate = typeof Symbol === 'function' ? Symbol('did-not-update') : {}
 
 const AsyncComputed = {
-  install (Vue, pluginOptions) {
+  install(Vue, pluginOptions) {
     pluginOptions = pluginOptions || {}
 
     Vue.config
@@ -20,12 +20,12 @@ const AsyncComputed = {
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
     Vue.mixin({
-      data () {
+      data() {
         return {
           _asyncComputed: {},
         }
       },
-      beforeCreate () {
+      beforeCreate() {
         const optionData = this.$options.data
         const asyncComputed = this.$options.asyncComputed || {}
 
@@ -40,7 +40,7 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = getter
         }
 
-        this.$options.data = function vueAsyncComputedInjectedDataFn (vm) {
+        this.$options.data = function vueAsyncComputedInjectedDataFn(vm) {
           const data = (
             (typeof optionData === 'function')
               ? optionData.call(this, vm)
@@ -58,10 +58,10 @@ const AsyncComputed = {
           return data
         }
       },
-      created () {
+      created() {
         for (const key in this.$options.asyncComputed || {}) {
           const item = this.$options.asyncComputed[key],
-                value = generateDefault.call(this, item, pluginOptions)
+            value = generateDefault.call(this, item, pluginOptions)
           if (isComputedLazy(item)) {
             silentSetLazy(this, key, value)
           } else {
@@ -74,7 +74,7 @@ const AsyncComputed = {
           const watcher = newPromise => {
             const thisPromise = ++promiseId
 
-            if (newPromise === DidNotUpdate) {
+            if (shouldNotUpdate(newPromise)) {
               return
             }
 
@@ -119,20 +119,20 @@ const AsyncComputed = {
   }
 }
 
-function setAsyncState (vm, stateObject, state) {
+function setAsyncState(vm, stateObject, state) {
   vm.$set(vm.$data._asyncComputed[stateObject], 'state', state)
   vm.$set(vm.$data._asyncComputed[stateObject], 'updating', state === 'updating')
   vm.$set(vm.$data._asyncComputed[stateObject], 'error', state === 'error')
   vm.$set(vm.$data._asyncComputed[stateObject], 'success', state === 'success')
 }
 
-function getterOnly (fn) {
+function getterOnly(fn) {
   if (typeof fn === 'function') return fn
 
   return fn.get
 }
 
-function getterFn (key, fn) {
+function getterFn(key, fn) {
   if (typeof fn === 'function') return fn
 
   let getter = fn.get
@@ -142,18 +142,12 @@ function getterFn (key, fn) {
   }
 
   if (fn.hasOwnProperty('shouldUpdate')) {
-    const previousGetter = getter
-    getter = function getter () {
-      if (fn.shouldUpdate.call(this)) {
-        return previousGetter.call(this)
-      }
-      return DidNotUpdate
-    }
+    getter = getGetterWithShouldUpdate(fn, getter)
   }
 
   if (isComputedLazy(fn)) {
     const nonLazy = getter
-    getter = function lazyGetter () {
+    getter = function lazyGetter() {
       if (isLazyActive(this, key)) {
         return nonLazy.call(this)
       } else {
@@ -164,7 +158,7 @@ function getterFn (key, fn) {
   return getter
 }
 
-function generateDefault (fn, pluginOptions) {
+function generateDefault(fn, pluginOptions) {
   let defaultValue = null
 
   if ('default' in fn) {
