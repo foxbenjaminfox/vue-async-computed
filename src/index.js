@@ -40,23 +40,7 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = getter
         }
 
-        this.$options.data = function vueAsyncComputedInjectedDataFn(vm) {
-          const data = (
-            (typeof optionData === 'function')
-              ? optionData.call(this, vm)
-              : optionData
-          ) || {}
-          for (const key in asyncComputed) {
-            const item = this.$options.asyncComputed[key]
-            if (isComputedLazy(item)) {
-              initLazy(data, key)
-              this.$options.computed[key] = makeLazyComputed(key)
-            } else {
-              data[key] = null
-            }
-          }
-          return data
-        }
+        this.$options.data = initDataWithAsyncComputed(this.$options)
       },
       created() {
         for (const key in this.$options.asyncComputed || {}) {
@@ -117,6 +101,28 @@ const AsyncComputed = {
       }
     })
   }
+}
+
+function initDataWithAsyncComputed(options) {
+  const optionData = options.data
+  const asyncComputed = options.asyncComputed || {}
+
+  return function vueAsyncComputedInjectedDataFn(vm) {
+    const data = ((typeof optionData === 'function')
+      ? optionData.call(this, vm)
+      : optionData) || {};
+    for (const key in asyncComputed) {
+      const item = this.$options.asyncComputed[key];
+      if (isComputedLazy(item)) {
+        initLazy(data, key);
+        this.$options.computed[key] = makeLazyComputed(key);
+      }
+      else {
+        data[key] = null;
+      }
+    }
+    return data;
+  };
 }
 
 function setAsyncState(vm, stateObject, state) {
