@@ -25,18 +25,18 @@ const AsyncComputed = {
           _asyncComputed: {},
         }
       },
+      computed: {
+        $asyncComputed(){
+          return this.$data._asyncComputed
+        }
+      },
       beforeCreate() {
-        const optionData = this.$options.data
         const asyncComputed = this.$options.asyncComputed || {}
-
-        if (!this.$options.computed) this.$options.computed = {}
-
-        this.$options.computed.$asyncComputed = () => this.$data._asyncComputed
 
         if (!Object.keys(asyncComputed).length) return
 
         for (const key in asyncComputed) {
-          const getter = getterFn(key, this.$options.asyncComputed[key])
+          const getter = getterFn(key, asyncComputed[key])
           this.$options.computed[prefix + key] = getter
         }
 
