@@ -12,7 +12,7 @@ import { getGetterWithShouldUpdate, shouldNotUpdate } from './shouldUpdate'
 const prefix = '_async_computed$'
 
 const AsyncComputed = {
-  install(Vue, pluginOptions) {
+  install (Vue, pluginOptions) {
     pluginOptions = pluginOptions || {}
 
     Vue.config
@@ -20,17 +20,17 @@ const AsyncComputed = {
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
     Vue.mixin({
-      data() {
+      data () {
         return {
           _asyncComputed: {},
         }
       },
       computed: {
-        $asyncComputed(){
+        $asyncComputed () {
           return this.$data._asyncComputed
         }
       },
-      beforeCreate() {
+      beforeCreate () {
         const asyncComputed = this.$options.asyncComputed || {}
 
         if (!Object.keys(asyncComputed).length) return
@@ -42,10 +42,10 @@ const AsyncComputed = {
 
         this.$options.data = initDataWithAsyncComputed(this.$options)
       },
-      created() {
+      created () {
         for (const key in this.$options.asyncComputed || {}) {
           const item = this.$options.asyncComputed[key],
-            value = generateDefault.call(this, item, pluginOptions)
+                value = generateDefault.call(this, item, pluginOptions)
           if (isComputedLazy(item)) {
             silentSetLazy(this, key, value)
           } else {
@@ -54,91 +54,91 @@ const AsyncComputed = {
         }
 
         for (const key in this.$options.asyncComputed || {}) {
-          let promiseId = 0
-          const watcher = newPromise => {
-            const thisPromise = ++promiseId
-
-            if (shouldNotUpdate(newPromise)) {
-              return
-            }
-
-            if (!newPromise || !newPromise.then) {
-              newPromise = Promise.resolve(newPromise)
-            }
-            setAsyncState(this, key, 'updating')
-
-            newPromise.then(value => {
-              if (thisPromise !== promiseId) return
-              setAsyncState(this, key, 'success')
-              this[key] = value
-            }).catch(err => {
-              if (thisPromise !== promiseId) return
-
-              setAsyncState(this, key, 'error')
-              Vue.set(this.$data._asyncComputed[key], 'exception', err)
-              if (pluginOptions.errorHandler === false) return
-
-              const handler = (pluginOptions.errorHandler === undefined)
-                ? console.error.bind(console, 'Error evaluating async computed property:')
-                : pluginOptions.errorHandler
-
-              if (pluginOptions.useRawError) {
-                handler(err)
-              } else {
-                handler(err.stack)
-              }
-            })
-          }
-          Vue.set(this.$data._asyncComputed, key, {
-            exception: null,
-            update: () => {
-              watcher(getterOnly(this.$options.asyncComputed[key]).apply(this))
-            }
-          })
-          setAsyncState(this, key, 'updating')
-          this.$watch(prefix + key, watcher, { immediate: true })
+          handleAsyncComputedPropetyChanges(this, key, pluginOptions, Vue)
         }
       }
     })
   }
 }
+function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
+  let promiseId = 0
+  const watcher = newPromise => {
+    const thisPromise = ++promiseId
 
-function initDataWithAsyncComputed(options) {
+    if (shouldNotUpdate(newPromise)) return
+
+    if (!newPromise || !newPromise.then) {
+      newPromise = Promise.resolve(newPromise)
+    }
+    setAsyncState(vm, key, 'updating')
+
+    newPromise.then(value => {
+      if (thisPromise !== promiseId) return
+      setAsyncState(vm, key, 'success')
+      vm[key] = value
+    }).catch(err => {
+      if (thisPromise !== promiseId) return
+
+      setAsyncState(vm, key, 'error')
+      Vue.set(vm.$data._asyncComputed[key], 'exception', err)
+      if (pluginOptions.errorHandler === false) return
+
+      const handler = (pluginOptions.errorHandler === undefined)
+        ? console.error.bind(console, 'Error evaluating async computed property:')
+        : pluginOptions.errorHandler
+
+      if (pluginOptions.useRawError) {
+        handler(err)
+      } else {
+        handler(err.stack)
+      }
+    })
+  }
+  Vue.set(vm.$data._asyncComputed, key, {
+    exception: null,
+    update: () => {
+      watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
+    }
+  })
+  setAsyncState(vm, key, 'updating')
+  vm.$watch(prefix + key, watcher, { immediate: true })
+}
+
+function initDataWithAsyncComputed (options) {
   const optionData = options.data
   const asyncComputed = options.asyncComputed || {}
 
-  return function vueAsyncComputedInjectedDataFn(vm) {
+  return function vueAsyncComputedInjectedDataFn (vm) {
     const data = ((typeof optionData === 'function')
       ? optionData.call(this, vm)
-      : optionData) || {};
+      : optionData) || {}
     for (const key in asyncComputed) {
-      const item = this.$options.asyncComputed[key];
+      const item = this.$options.asyncComputed[key]
       if (isComputedLazy(item)) {
-        initLazy(data, key);
-        this.$options.computed[key] = makeLazyComputed(key);
-      }
-      else {
-        data[key] = null;
+        initLazy(data, key)
+        this.$options.computed[key] = makeLazyComputed(key)
+      } else {
+        data[key] = null
       }
     }
-    return data;
-  };
+    return data
+  }
 }
 
-function setAsyncState(vm, stateObject, state) {
+function setAsyncState (vm, stateObject, state) {
   vm.$set(vm.$data._asyncComputed[stateObject], 'state', state)
   vm.$set(vm.$data._asyncComputed[stateObject], 'updating', state === 'updating')
   vm.$set(vm.$data._asyncComputed[stateObject], 'error', state === 'error')
   vm.$set(vm.$data._asyncComputed[stateObject], 'success', state === 'success')
 }
 
-function getterOnly(fn) {
+function getterOnly (fn) {
   if (typeof fn === 'function') return fn
 
   return fn.get
 }
 
-function getterFn(key, fn) {
+function getterFn (key, fn) {
   if (typeof fn === 'function') return fn
 
   let getter = fn.get
@@ -153,7 +153,7 @@ function getterFn(key, fn) {
 
   if (isComputedLazy(fn)) {
     const nonLazy = getter
-    getter = function lazyGetter() {
+    getter = function lazyGetter () {
       if (isLazyActive(this, key)) {
         return nonLazy.call(this)
       } else {
@@ -164,7 +164,7 @@ function getterFn(key, fn) {
   return getter
 }
 
-function generateDefault(fn, pluginOptions) {
+function generateDefault (fn, pluginOptions) {
   let defaultValue = null
 
   if ('default' in fn) {
