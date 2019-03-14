@@ -88,7 +88,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
         : pluginOptions.errorHandler
 
       if (pluginOptions.useRawError) {
-        handler(err)
+        handler(err, vm, err.stack)
       } else {
         handler(err.stack)
       }
