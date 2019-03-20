@@ -49,7 +49,7 @@ new Vue({
       return Vue.http.get('/get-username-by-id/' + this.userId)
         // This assumes that this endpoint will send us a response
         // that contains something like this:
-        // { 
+        // {
         //   "username": "username-goes-here"
         // }
         .then(response => response.data.username)
@@ -98,7 +98,7 @@ Alternately, you can link it directly from a CDN:
 
 ```html
 <script src="https://unpkg.com/vue-async-computed"></script>
-<!-- 
+<!--
   That will always point to the latest version of vue-async-computed.
   You probably want to instead pin it to a specific version:
 -->
@@ -133,7 +133,7 @@ Vue.use(AsyncComputed)
    Vue instance as they resolve. Just as with normal computed
    properties, if the data the property depends on changes
    then the property is re-run automatically.
-   
+
    You can almost completely ignore the fact that behind the
    scenes they are asynchronous. The one thing to remember is
    that until a asynchronous property's promise resolves
@@ -185,7 +185,7 @@ new Vue({
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
        },
-       // The computed proporty `blogPostContent` will have 
+       // The computed proporty `blogPostContent` will have
        // the value 'Loading...' until the first time the promise
        // returned from the `get` function resolves.
        default: 'Loading...'
@@ -392,10 +392,14 @@ new Vue({
 
 By default, in case of a rejected promise in an async computed property, vue-async-computed will take care of logging the error for you.
 
-If you want to use a custom logging function, the plugin takes an `errorHandler` option, which should be the function you want called with the error information. By default, it will be called with the error's stack trace as an argument, but if you want the raw error itself you can set the
-`useRawError` option to `true`.
+If you want to use a custom logging function, the plugin takes an `errorHandler`
+option, which should be the function you want called with the error information.
+By default, it will be called with only the error's stack trace as an argument,
+but if you register the `errorHandler` with `useRawError` set to `true` the
+function will receive the raw error, a reference to the `Vue` instance that
+threw the error and the error's stack trace.
 
-For example: 
+For example:
 
 ```js
 Vue.use(AsyncComputed, {
@@ -409,11 +413,11 @@ Vue.use(AsyncComputed, {
 // Or with `useRawError`:
 Vue.use(AsyncComputed, {
   useRawError: true,
-  errorHandler (err) {
+  errorHandler (err, vm, stack) {
     console.log('An error occurred!')
     console.log('The error message was: ' + err.msg)
     console.log('And the stack trace was:')
-    console.log(err.stack)
+    console.log(stack)
   }
 )
 ```
