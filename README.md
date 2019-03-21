@@ -17,7 +17,7 @@
   </a>
 
   <a href="https://npmjs.org/package/vue-async-computed">
-    <img src="http://img.shields.io/npm/dm/vue-async-computed.svg?style=flat-square"
+    <img src="https://img.shields.io/npm/dm/vue-async-computed.svg?style=flat-square"
          alt="Downloads">
   </a>
 
@@ -424,18 +424,4 @@ You can pass `false` as the `errorHandler` in order to silently ignore rejected 
 
 ## License
 
-MIT © [Benjamin Fox](http://github.com/foxbenjaminfox)
-
-[npm-url]: https://npmjs.org/package/vue-async-computed
-[npm-image]: https://img.shields.io/npm/v/vue-async-computed.svg?style=flat-square
-
-[travis-url]: https://travis-ci.org/foxbenjaminfox/vue-async-computed
-[travis-image]: https://img.shields.io/travis/foxbenjaminfox/vue-async-computed.svg?style=flat-square
-
-[coveralls-url]: https://coveralls.io/r/foxbenjaminfox/vue-async-computed
-[coveralls-image]: https://img.shields.io/coveralls/foxbenjaminfox/vue-async-computed.svg?style=flat-square
-
-[depstat-url]: https://david-dm.org/foxbenjaminfox/vue-async-computed
-[depstat-image]: https://david-dm.org/foxbenjaminfox/vue-async-computed.svg?style=flat-square
-
-[download-badge]: http://img.shields.io/npm/dm/vue-async-computed.svg?style=flat-square
+MIT © [Benjamin Fox](https://github.com/foxbenjaminfox)
