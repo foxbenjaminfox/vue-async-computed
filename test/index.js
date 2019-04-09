@@ -1013,3 +1013,28 @@ test("Watch as array with more then one value", t => {
     })
   })
 })
+
+test("$asyncComputed[name].state resolves to 'success' even if the computed value is 0 (issue #75)", t => {
+  t.plan(11)
+  const vm = new Vue({
+    asyncComputed: {
+      a () {
+        return Promise.resolve(0)
+      },
+    }
+  })
+  t.equal(vm.$asyncComputed['a'].state, 'updating')
+  t.equal(vm.$asyncComputed['a'].updating, true)
+  t.equal(vm.$asyncComputed['a'].success, false)
+  t.equal(vm.$asyncComputed['a'].error, false)
+  t.equal(vm.$asyncComputed['a'].exception, null)
+
+  Vue.nextTick(() => {
+    t.equal(vm.a, 0)
+    t.equal(vm.$asyncComputed['a'].state, 'success')
+    t.equal(vm.$asyncComputed['a'].updating, false)
+    t.equal(vm.$asyncComputed['a'].success, true)
+    t.equal(vm.$asyncComputed['a'].error, false)
+    t.equal(vm.$asyncComputed['a'].exception, null)
+  })
+})
