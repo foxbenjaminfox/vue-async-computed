@@ -4,6 +4,7 @@
   "description": "Async computed properties for Vue",
   "main": "dist/vue-async-computed.js",
   "module": "dist/vue-async-computed.esm.js",
+  "types": "types/index.d.ts",
   "files": [
     "bin/",
     "dist/"
