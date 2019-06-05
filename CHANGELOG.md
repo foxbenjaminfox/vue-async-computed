@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.7.0](#v370)
 - [v3.6.1](#v361)
 - [v3.6.0](#v360)
 - [v3.5.2](#v352)
@@ -25,6 +26,10 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.7.0
+  * [#68](https://github.com/foxbenjaminfox/vue-async-computed/pull/68) Refactoring to make some of the code be more readable.
+  * [#71](https://github.com/foxbenjaminfox/vue-async-computed/pull/71) Add `vm` and `info` arguments to the error handler callback (when `useRawError` is set.)
 
 ### v3.6.1
   * Fix for browsers that don't support `Symbol.iterator`.
