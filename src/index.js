@@ -97,7 +97,9 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
   Vue.set(vm.$data._asyncComputed, key, {
     exception: null,
     update: () => {
-      watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
+      if (!vm._isDestroyed){
+        watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
+      }
     }
   })
   setAsyncState(vm, key, 'updating')
