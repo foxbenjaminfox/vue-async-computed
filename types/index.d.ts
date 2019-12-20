@@ -16,7 +16,7 @@ type AsyncComputedGetter<T> = () => Promise<T>;
 interface IAsyncComputedValue<T> {
   default?: T | (() => T);
   get: AsyncComputedGetter<T>;
-  watch?: () => void;
+  watch?: string[] | (() => void);
   shouldUpdate?: () => boolean;
   lazy?: boolean;
 }
