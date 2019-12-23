@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.8.0](#v380)
 - [v3.7.0](#v370)
 - [v3.6.1](#v361)
 - [v3.6.0](#v360)
@@ -26,6 +27,11 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.8.0
+  * [#83](https://github.com/foxbenjaminfox/vue-async-computed/pull/83) Stop the update method from working after the component is destroyed.
+  * Include the long-requested ([#25](https://github.com/foxbenjaminfox/vue-async-computed/issues/25)) typescript types in the `master` branch.
+  * [#85](https://github.com/foxbenjaminfox/vue-async-computed/pull/85) Add support in the typescript types for the array of strings version of `watch`.
 
 ### v3.7.0
   * [#68](https://github.com/foxbenjaminfox/vue-async-computed/pull/68) Refactoring to make some of the code be more readable.
