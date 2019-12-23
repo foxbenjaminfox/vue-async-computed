@@ -1048,3 +1048,28 @@ test("$asyncComputed[name].state resolves to 'success' even if the computed valu
     t.equal(vm.isUpdating, false)
   })
 })
+
+test("$asyncComputed[name].update does nothing if called after the component is destroyed", t => {
+  t.plan(4)
+  let i = 0
+  const vm = new Vue({
+    asyncComputed: {
+      a: {
+        async get () {
+          return ++i
+        }
+      }
+    }
+  })
+
+  t.equal(vm.a, null)
+  Vue.nextTick(() => {
+    t.equal(vm.a, 1)
+    vm.$destroy()
+    vm.$asyncComputed.a.update()
+    Vue.nextTick(() => {
+      t.equal(i, 1)
+      t.equal(vm.a, 1)
+    })
+  })
+})
