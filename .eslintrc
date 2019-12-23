@@ -9,11 +9,24 @@
     "es6": true
   },
   "rules": {
-    "arrow-parens": 0,
     "quotes": 0,
-    "no-multi-str": 0,
-    "comma-dangle": [2, "only-multiline"],
-    "indent": [2, 2, { "SwitchCase": 1, "VariableDeclarator": { "var": 2, "let": 2, "const": 3 } }],
+    "no-unused-vars": 0,
+    "comma-dangle": [
+      2,
+      "only-multiline"
+    ],
+    "indent": [
+      2,
+      2,
+      {
+        "SwitchCase": 1,
+        "VariableDeclarator": {
+          "var": 2,
+          "let": 2,
+          "const": 3
+        }
+      }
+    ],
     "one-var": 0,
     "promise/catch-or-return": 2
   }

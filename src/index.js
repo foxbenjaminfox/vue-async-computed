@@ -6,8 +6,16 @@ import {
   silentGetLazy,
   silentSetLazy,
 } from './lazy'
+import {
+  getterOnly,
+  hasOwnProperty,
+  setAsyncState,
+} from './util'
 import { getWatchedGetter } from './watch'
-import { getGetterWithShouldUpdate, shouldNotUpdate } from './shouldUpdate'
+import {
+  getGetterWithShouldUpdate,
+  shouldNotUpdate,
+} from './shouldUpdate'
 
 const prefix = '_async_computed$'
 
@@ -60,6 +68,7 @@ const AsyncComputed = {
     })
   }
 }
+
 function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
   let promiseId = 0
   const watcher = newPromise => {
@@ -97,7 +106,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
   Vue.set(vm.$data._asyncComputed, key, {
     exception: null,
     update: () => {
-      if (!vm._isDestroyed){
+      if (!vm._isDestroyed) {
         watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
       }
     }
@@ -127,29 +136,16 @@ function initDataWithAsyncComputed (options) {
   }
 }
 
-function setAsyncState (vm, stateObject, state) {
-  vm.$set(vm.$data._asyncComputed[stateObject], 'state', state)
-  vm.$set(vm.$data._asyncComputed[stateObject], 'updating', state === 'updating')
-  vm.$set(vm.$data._asyncComputed[stateObject], 'error', state === 'error')
-  vm.$set(vm.$data._asyncComputed[stateObject], 'success', state === 'success')
-}
-
-function getterOnly (fn) {
-  if (typeof fn === 'function') return fn
-
-  return fn.get
-}
-
 function getterFn (key, fn) {
   if (typeof fn === 'function') return fn
 
   let getter = fn.get
 
-  if (fn.hasOwnProperty('watch')) {
+  if (hasOwnProperty(fn, 'watch')) {
     getter = getWatchedGetter(fn)
   }
 
-  if (fn.hasOwnProperty('shouldUpdate')) {
+  if (hasOwnProperty(fn, 'shouldUpdate')) {
     getter = getGetterWithShouldUpdate(fn, getter)
   }
 

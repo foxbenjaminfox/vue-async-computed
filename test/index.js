@@ -2,7 +2,7 @@ import test from "tape"
 import AsyncComputed from "../src"
 import Vue from 'vue'
 
-let baseErrorCallback = () => {
+const baseErrorCallback = () => {
   throw new Error('Unexpected error thrown')
 }
 
@@ -737,22 +737,22 @@ test("$asyncComputed[name] is created for all async computed properties", t => {
     }
   })
   t.deepEqual(Object.keys(vm.$asyncComputed), ['a', 'b'])
-  t.equal(vm.$asyncComputed['a'].state, 'updating')
-  t.equal(vm.$asyncComputed['b'].state, 'updating')
-  t.equal(vm.$asyncComputed['a'].updating, true)
-  t.equal(vm.$asyncComputed['a'].success, false)
-  t.equal(vm.$asyncComputed['a'].error, false)
-  t.equal(vm.$asyncComputed['a'].exception, null)
+  t.equal(vm.$asyncComputed.a.state, 'updating')
+  t.equal(vm.$asyncComputed.b.state, 'updating')
+  t.equal(vm.$asyncComputed.a.updating, true)
+  t.equal(vm.$asyncComputed.a.success, false)
+  t.equal(vm.$asyncComputed.a.error, false)
+  t.equal(vm.$asyncComputed.a.exception, null)
 
   Vue.nextTick(() => {
     t.equal(vm.a, 1)
     t.equal(vm.b, 2)
-    t.equal(vm.$asyncComputed['a'].state, 'success')
-    t.equal(vm.$asyncComputed['b'].state, 'success')
-    t.equal(vm.$asyncComputed['a'].updating, false)
-    t.equal(vm.$asyncComputed['a'].success, true)
-    t.equal(vm.$asyncComputed['a'].error, false)
-    t.equal(vm.$asyncComputed['a'].exception, null)
+    t.equal(vm.$asyncComputed.a.state, 'success')
+    t.equal(vm.$asyncComputed.b.state, 'success')
+    t.equal(vm.$asyncComputed.a.updating, false)
+    t.equal(vm.$asyncComputed.a.success, true)
+    t.equal(vm.$asyncComputed.a.error, false)
+    t.equal(vm.$asyncComputed.a.exception, null)
   })
 })
 
@@ -766,14 +766,14 @@ test("$asyncComputed[name] handles errors and captures exceptions", t => {
       }
     }
   })
-  t.equal(vm.$asyncComputed['a'].state, 'updating')
+  t.equal(vm.$asyncComputed.a.state, 'updating')
   pluginOptions.errorHandler = stack => {
     t.equal(vm.a, null)
-    t.equal(vm.$asyncComputed['a'].state, 'error')
-    t.equal(vm.$asyncComputed['a'].updating, false)
-    t.equal(vm.$asyncComputed['a'].success, false)
-    t.equal(vm.$asyncComputed['a'].error, true)
-    t.equal(vm.$asyncComputed['a'].exception, 'error-message')
+    t.equal(vm.$asyncComputed.a.state, 'error')
+    t.equal(vm.$asyncComputed.a.updating, false)
+    t.equal(vm.$asyncComputed.a.success, false)
+    t.equal(vm.$asyncComputed.a.error, true)
+    t.equal(vm.$asyncComputed.a.exception, 'error-message')
     pluginOptions.errorHandler = baseErrorCallback
   }
 })
@@ -794,9 +794,9 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
   Vue.nextTick(() => {
     t.equal(vm.a, 1)
     valueToReturn = 2
-    t.equal(vm.$asyncComputed['a'].state, 'success')
-    vm.$asyncComputed['a'].update()
-    t.equal(vm.$asyncComputed['a'].state, 'updating')
+    t.equal(vm.$asyncComputed.a.state, 'success')
+    vm.$asyncComputed.a.update()
+    t.equal(vm.$asyncComputed.a.state, 'updating')
 
     Vue.nextTick(() => {
       t.equal(vm.a, 2)
@@ -837,18 +837,18 @@ test("$asyncComputed[name].update has the correct execution context", t => {
   Vue.nextTick(() => {
     //  case 1: a is a function
     t.equal(vm.a, 2)
-    t.equal(vm.$asyncComputed['a'].state, 'success')
+    t.equal(vm.$asyncComputed.a.state, 'success')
     //  case 2: b is an object with a getter function
     t.equal(vm.b, 2)
-    t.equal(vm.$asyncComputed['b'].state, 'success')
+    t.equal(vm.$asyncComputed.b.state, 'success')
 
     addedValue = 4
 
-    vm.$asyncComputed['a'].update()
-    t.equal(vm.$asyncComputed['a'].state, 'updating')
+    vm.$asyncComputed.a.update()
+    t.equal(vm.$asyncComputed.a.state, 'updating')
 
-    vm.$asyncComputed['b'].update()
-    t.equal(vm.$asyncComputed['b'].state, 'updating')
+    vm.$asyncComputed.b.update()
+    t.equal(vm.$asyncComputed.b.state, 'updating')
 
     Vue.nextTick(() => {
       t.equal(vm.a, 5)
@@ -1031,20 +1031,20 @@ test("$asyncComputed[name].state resolves to 'success' even if the computed valu
       }
     }
   })
-  t.equal(vm.$asyncComputed['a'].state, 'updating')
-  t.equal(vm.$asyncComputed['a'].updating, true)
-  t.equal(vm.$asyncComputed['a'].success, false)
-  t.equal(vm.$asyncComputed['a'].error, false)
-  t.equal(vm.$asyncComputed['a'].exception, null)
+  t.equal(vm.$asyncComputed.a.state, 'updating')
+  t.equal(vm.$asyncComputed.a.updating, true)
+  t.equal(vm.$asyncComputed.a.success, false)
+  t.equal(vm.$asyncComputed.a.error, false)
+  t.equal(vm.$asyncComputed.a.exception, null)
   t.equal(vm.isUpdating, true)
 
   Vue.nextTick(() => {
     t.equal(vm.a, 0)
-    t.equal(vm.$asyncComputed['a'].state, 'success')
-    t.equal(vm.$asyncComputed['a'].updating, false)
-    t.equal(vm.$asyncComputed['a'].success, true)
-    t.equal(vm.$asyncComputed['a'].error, false)
-    t.equal(vm.$asyncComputed['a'].exception, null)
+    t.equal(vm.$asyncComputed.a.state, 'success')
+    t.equal(vm.$asyncComputed.a.updating, false)
+    t.equal(vm.$asyncComputed.a.success, true)
+    t.equal(vm.$asyncComputed.a.error, false)
+    t.equal(vm.$asyncComputed.a.exception, null)
     t.equal(vm.isUpdating, false)
   })
 })

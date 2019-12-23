@@ -1,5 +1,7 @@
+import { hasOwnProperty } from './util'
+
 export function isComputedLazy (item) {
-  return item.hasOwnProperty('lazy') && item.lazy
+  return hasOwnProperty(item, 'lazy') && item.lazy
 }
 
 export function isLazyActive (vm, key) {
