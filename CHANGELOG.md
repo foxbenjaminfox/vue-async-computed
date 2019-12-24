@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.8.1](#v381)
 - [v3.8.0](#v380)
 - [v3.7.0](#v370)
 - [v3.6.1](#v361)
@@ -27,6 +28,9 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.8.1
+  * Bugfix release in order to actually publish the typescript types along with the pacakge.
 
 ### v3.8.0
   * [#83](https://github.com/foxbenjaminfox/vue-async-computed/pull/83) Stop the update method from working after the component is destroyed.
