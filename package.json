@@ -76,5 +76,8 @@
     "tape": "^4.12.0",
     "vue": "^2.5.21",
     "watch": "^1.0.2"
+  },
+  "dependencies": {
+    "vue-class-component": "^7.1.0"
   }
 }
