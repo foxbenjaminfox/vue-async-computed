@@ -16,7 +16,6 @@ import {
   getGetterWithShouldUpdate,
   shouldNotUpdate,
 } from './shouldUpdate'
-import { createDecorator } from 'vue-class-component'
 
 const prefix = '_async_computed$'
 
@@ -177,18 +176,6 @@ function generateDefault (fn, pluginOptions) {
   } else {
     return defaultValue
   }
-}
-
-export function AsyncComputedProp (computedOptions) {
-  return createDecorator((options, key) => {
-    options.asyncComputed = options.asyncComputed || {}
-    const method = options.methods[key]
-    options.asyncComputed[key] = Object.assign(
-      { get: method },
-      computedOptions
-    )
-    delete options.methods[key]
-  })
 }
 
 export default AsyncComputed

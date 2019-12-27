@@ -1,5 +1,4 @@
-import Vue, { PluginFunction } from "vue";
-import { VueDecorator } from 'vue-class-component';
+import Vue, { PluginFunction } from 'vue';
 
 export interface IAsyncComputedOptions {
   errorHandler?: (error: string | Error) => void;
@@ -13,8 +12,9 @@ export default class AsyncComputed {
   static version: string;
 }
 
-type AsyncComputedGetter<T> = () => Promise<T>;
-interface IAsyncComputedValue<T> {
+export type AsyncComputedGetter<T> = () => Promise<T>;
+
+export interface IAsyncComputedValue<T> {
   default?: T | (() => T);
   get: AsyncComputedGetter<T>;
   watch?: string[] | (() => void);
@@ -22,22 +22,12 @@ interface IAsyncComputedValue<T> {
   lazy?: boolean;
 }
 
-export function AsyncComputedProp<T>(
-  computedOptions?: IAsyncComputedValue<T>,
-): VueDecorator
-
-interface AsyncComputedObject {
+export interface AsyncComputedObject {
   [K: string]: AsyncComputedGetter<any> | IAsyncComputedValue<any>;
 }
 
-declare module "vue/types/options" {
-  interface ComponentOptions<V extends Vue> {
-    asyncComputed?: AsyncComputedObject;
-  }
-}
-
-interface IASyncComputedState {
-  state: "updating" | "success" | "error";
+export interface IASyncComputedState {
+  state: 'updating' | 'success' | 'error';
   updating: boolean;
   success: boolean;
   error: boolean;
@@ -45,8 +35,14 @@ interface IASyncComputedState {
   update: () => void;
 }
 
-declare module "vue/types/vue" {
+declare module 'vue/types/options' {
+  interface ComponentOptions<V extends Vue> {
+    asyncComputed?: AsyncComputedObject;
+  }
+}
+
+declare module 'vue/types/vue' {
   interface Vue {
-    $asyncComputed: { [K: string]: IASyncComputedState };
+    $asyncComputed: {[K: string]: IASyncComputedState};
   }
 }
