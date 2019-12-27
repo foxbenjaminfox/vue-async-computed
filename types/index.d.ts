@@ -1,4 +1,5 @@
 import Vue, { PluginFunction } from "vue";
+import { VueDecorator } from 'vue-class-component';
 
 export interface IAsyncComputedOptions {
   errorHandler?: (error: string | Error) => void;
@@ -20,6 +21,10 @@ interface IAsyncComputedValue<T> {
   shouldUpdate?: () => boolean;
   lazy?: boolean;
 }
+
+export function AsyncComputedProp<T>(
+  computedOptions?: IAsyncComputedValue<T>,
+): VueDecorator
 
 interface AsyncComputedObject {
   [K: string]: AsyncComputedGetter<any> | IAsyncComputedValue<any>;
