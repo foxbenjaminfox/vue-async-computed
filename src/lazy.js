@@ -11,9 +11,9 @@ export function isLazyActive (vm, key) {
 const lazyActivePrefix = 'async_computed$lazy_active$',
       lazyDataPrefix = 'async_computed$lazy_data$'
 
-export function initLazy (data, key) {
+export function initLazy (data, key, value) {
   data[lazyActivePrefix + key] = false
-  data[lazyDataPrefix + key] = null
+  data[lazyDataPrefix + key] = value
 }
 
 export function makeLazyComputed (key) {
