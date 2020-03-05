@@ -221,7 +221,7 @@ test("Multiple asyncComputed objects are handled the same as normal computed pro
 })
 
 test("Async computed values can have defaults", t => {
-  t.plan(6)
+  t.plan(8)
   const vm = new Vue({
     asyncComputed: {
       x: {
@@ -238,9 +238,27 @@ test("Async computed values can have defaults", t => {
           return Promise.resolve(true)
         }
       }
-    }
+    },
+    watch: {
+      x: {
+        deep: true,
+        immediate: true,
+        handler (newValue, oldValue) {
+          if (oldValue === undefined) {
+            t.equal(newValue, false, 'watch: x should default to false')
+          }
+        }
+      },
+    },
+    computed: {
+      computedFromX: function () {
+        t.equal(this.x, false, 'computed: x should default to false')
+        return this.x
+      },
+    },
   })
-  t.equal(vm.x, false, 'x should default to true')
+  const computed = vm.computedFromX// Force computed execution
+  t.equal(vm.x, false, 'x should default to false')
   t.equal(vm.y, null, 'y doesn\'t have a default')
   t.equal(vm.z, null, 'z doesn\'t have a default despite being defined with an object')
   Vue.nextTick(() => {
