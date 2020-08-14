@@ -406,7 +406,7 @@ Vue.use(AsyncComputed, {
     console.log('---')
     console.log(stack)
   }
-)
+})
 
 // Or with `useRawError`:
 Vue.use(AsyncComputed, {
@@ -417,7 +417,7 @@ Vue.use(AsyncComputed, {
     console.log('And the stack trace was:')
     console.log(stack)
   }
-)
+})
 ```
 
 You can pass `false` as the `errorHandler` in order to silently ignore rejected promises.
