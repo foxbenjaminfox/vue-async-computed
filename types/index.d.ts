@@ -14,12 +14,15 @@ export default class AsyncComputed {
 
 export type AsyncComputedGetter<T> = () => Promise<T>;
 
-export interface IAsyncComputedValue<T> {
+export interface IAsyncComputedValueBase<T> {
   default?: T | (() => T);
-  get: AsyncComputedGetter<T>;
   watch?: string[] | (() => void);
   shouldUpdate?: () => boolean;
   lazy?: boolean;
+}
+
+export interface IAsyncComputedValue<T> extends IAsyncComputedValueBase<T> {
+  get: AsyncComputedGetter<T>;
 }
 
 export interface AsyncComputedObject {
