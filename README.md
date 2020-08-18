@@ -6,11 +6,6 @@
          alt="NPM Version">
   </a>
 
-  <a href="https://coveralls.io/r/foxbenjaminfox/vue-async-computed">
-    <img src="https://img.shields.io/coveralls/foxbenjaminfox/vue-async-computed.svg?style=flat-square"
-         alt="Coverage Status">
-  </a>
-
   <a href="https://travis-ci.org/foxbenjaminfox/vue-async-computed">
     <img src="https://img.shields.io/travis/foxbenjaminfox/vue-async-computed.svg?style=flat-square"
          alt="Build Status">
@@ -19,11 +14,6 @@
   <a href="https://npmjs.org/package/vue-async-computed">
     <img src="https://img.shields.io/npm/dm/vue-async-computed.svg?style=flat-square"
          alt="Downloads">
-  </a>
-
-  <a href="https://david-dm.org/foxbenjaminfox/vue-async-computed.svg">
-    <img src="https://david-dm.org/foxbenjaminfox/vue-async-computed.svg?style=flat-square"
-         alt="Dependency Status">
   </a>
 
   <a href="https://github.com/foxbenjaminfox/vue-async-computed/blob/master/LICENSE">
