@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Changelog
 
+- [v3.9.0](#v390)
 - [v3.8.1](#v381)
 - [v3.8.0](#v380)
 - [v3.7.0](#v370)
@@ -28,6 +29,9 @@
 - [v1.0.0](#v100)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+### v3.9.0
+  * [#95](https://github.com/foxbenjaminfox/vue-async-computed/pull/95) Fix a bug where default values weren't properly used properly for lazy async computed properties.
 
 ### v3.8.1
   * Bugfix release in order to actually publish the typescript types along with the pacakge.
