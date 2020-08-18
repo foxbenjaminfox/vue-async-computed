@@ -1,6 +1,6 @@
 {
   "name": "vue-async-computed",
-  "version": "3.8.3",
+  "version": "3.9.0",
   "description": "Async computed properties for Vue",
   "main": "dist/vue-async-computed.js",
   "module": "dist/vue-async-computed.esm.js",
