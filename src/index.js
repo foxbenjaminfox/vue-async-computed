@@ -48,7 +48,7 @@ const AsyncComputed = {
           this.$options.computed[prefix + key] = getter
         }
 
-        this.$options.data = initDataWithAsyncComputed(this.$options)
+        this.$options.data = initDataWithAsyncComputed(this.$options, pluginOptions)
       },
       created () {
         for (const key in this.$options.asyncComputed || {}) {
@@ -115,7 +115,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
   vm.$watch(prefix + key, watcher, { immediate: true })
 }
 
-function initDataWithAsyncComputed (options) {
+function initDataWithAsyncComputed (options, pluginOptions) {
   const optionData = options.data
   const asyncComputed = options.asyncComputed || {}
 
@@ -125,11 +125,13 @@ function initDataWithAsyncComputed (options) {
       : optionData) || {}
     for (const key in asyncComputed) {
       const item = this.$options.asyncComputed[key]
+
+      var value = generateDefault.call(this, item, pluginOptions)
       if (isComputedLazy(item)) {
-        initLazy(data, key)
+        initLazy(data, key, value)
         this.$options.computed[key] = makeLazyComputed(key)
       } else {
-        data[key] = null
+        data[key] = value
       }
     }
     return data
