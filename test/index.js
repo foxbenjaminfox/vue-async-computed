@@ -257,7 +257,9 @@ test("Async computed values can have defaults", t => {
       },
     },
   })
-  const computed = vm.computedFromX// Force computed execution
+
+  const computed = vm.computedFromX // Force computed execution
+
   t.equal(vm.x, false, 'x should default to false')
   t.equal(vm.y, null, 'y doesn\'t have a default')
   t.equal(vm.z, null, 'z doesn\'t have a default despite being defined with an object')
