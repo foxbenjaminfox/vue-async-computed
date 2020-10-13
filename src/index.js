@@ -21,8 +21,6 @@ const prefix = '_async_computed$'
 
 const AsyncComputed = {
   install (Vue, pluginOptions) {
-    pluginOptions = pluginOptions || {}
-
     Vue.config
       .optionMergeStrategies
       .asyncComputed = Vue.config.optionMergeStrategies.computed
@@ -31,7 +29,7 @@ const AsyncComputed = {
   }
 }
 
-function getAsyncComputedMixin (pluginOptions) {
+function getAsyncComputedMixin (pluginOptions = {}) {
   return {
     data () {
       return {
