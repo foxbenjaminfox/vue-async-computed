@@ -21,55 +21,58 @@ const prefix = '_async_computed$'
 
 const AsyncComputed = {
   install (Vue, pluginOptions) {
-    pluginOptions = pluginOptions || {}
-
     Vue.config
       .optionMergeStrategies
       .asyncComputed = Vue.config.optionMergeStrategies.computed
 
-    Vue.mixin({
-      data () {
-        return {
-          _asyncComputed: {},
-        }
-      },
-      computed: {
-        $asyncComputed () {
-          return this.$data._asyncComputed
-        }
-      },
-      beforeCreate () {
-        const asyncComputed = this.$options.asyncComputed || {}
-
-        if (!Object.keys(asyncComputed).length) return
-
-        for (const key in asyncComputed) {
-          const getter = getterFn(key, asyncComputed[key])
-          this.$options.computed[prefix + key] = getter
-        }
-
-        this.$options.data = initDataWithAsyncComputed(this.$options, pluginOptions)
-      },
-      created () {
-        for (const key in this.$options.asyncComputed || {}) {
-          const item = this.$options.asyncComputed[key],
-                value = generateDefault.call(this, item, pluginOptions)
-          if (isComputedLazy(item)) {
-            silentSetLazy(this, key, value)
-          } else {
-            this[key] = value
-          }
-        }
-
-        for (const key in this.$options.asyncComputed || {}) {
-          handleAsyncComputedPropetyChanges(this, key, pluginOptions, Vue)
-        }
-      }
-    })
+    Vue.mixin(getAsyncComputedMixin(pluginOptions))
   }
 }
 
-function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
+function getAsyncComputedMixin (pluginOptions = {}) {
+  return {
+    data () {
+      return {
+        _asyncComputed: {},
+      }
+    },
+    computed: {
+      $asyncComputed () {
+        return this.$data._asyncComputed
+      }
+    },
+    beforeCreate () {
+      const asyncComputed = this.$options.asyncComputed || {}
+
+      if (!Object.keys(asyncComputed).length) return
+
+      for (const key in asyncComputed) {
+        const getter = getterFn(key, asyncComputed[key])
+        this.$options.computed[prefix + key] = getter
+      }
+
+      this.$options.data = initDataWithAsyncComputed(this.$options, pluginOptions)
+    },
+    created () {
+      for (const key in this.$options.asyncComputed || {}) {
+        const item = this.$options.asyncComputed[key],
+              value = generateDefault.call(this, item, pluginOptions)
+        if (isComputedLazy(item)) {
+          silentSetLazy(this, key, value)
+        } else {
+          this[key] = value
+        }
+      }
+
+      for (const key in this.$options.asyncComputed || {}) {
+        handleAsyncComputedPropetyChanges(this, key, pluginOptions)
+      }
+    }
+  }
+}
+const AsyncComputedMixin = getAsyncComputedMixin()
+
+function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
   let promiseId = 0
   const watcher = newPromise => {
     const thisPromise = ++promiseId
@@ -89,7 +92,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
       if (thisPromise !== promiseId) return
 
       setAsyncState(vm, key, 'error')
-      Vue.set(vm.$data._asyncComputed[key], 'exception', err)
+      vm.$set(vm.$data._asyncComputed[key], 'exception', err)
       if (pluginOptions.errorHandler === false) return
 
       const handler = (pluginOptions.errorHandler === undefined)
@@ -103,7 +106,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions, Vue) {
       }
     })
   }
-  Vue.set(vm.$data._asyncComputed, key, {
+  vm.$set(vm.$data._asyncComputed, key, {
     exception: null,
     update: () => {
       if (!vm._isDestroyed) {
@@ -181,6 +184,7 @@ function generateDefault (fn, pluginOptions) {
 }
 
 export default AsyncComputed
+export { AsyncComputed as AsyncComputedPlugin, AsyncComputedMixin }
 
 /* istanbul ignore if */
 if (typeof window !== 'undefined' && window.Vue) {
