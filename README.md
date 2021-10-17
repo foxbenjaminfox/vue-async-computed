@@ -275,15 +275,15 @@ new Vue({
 
 ### Conditional Recalculation
 
-Using `watch` it is possible to run the computed property again but it will run regardless of the
-value of the watched property. If you need more control over when the computation should be rerun
-you can use `shouldUpdate`:
+Using `watch` it is possible to force the computed property to run again unconditionally.
+If you need more control over when the computation should be rerun you can use `shouldUpdate`:
+
 ```js
 
 new Vue({
   data: {
     postId: 1,
-    // Imagine pageType can be one of 'index', 'details' and 'edit'
+    // Imagine pageType can be one of 'index', 'details' and 'edit'.
     pageType: 'index'
   },
   asyncComputed: {
@@ -292,10 +292,10 @@ new Vue({
         return Vue.http.get('/post/' + this.postId)
           .then(response => response.data.postContent)
       },
-      // Will update whenever the pageType or postId changes
-      // but only if the pageType is not 'index' this way the
-      // blogPostContent will be refetched when loading the
-      // 'details' and 'edit' pages
+      // Will update whenever the pageType or postId changes,
+      // but only if the pageType is not 'index'. This way the
+      // blogPostContent will be refetched only when loading the
+      // 'details' and 'edit' pages.
       shouldUpdate () {
         return this.pageType !== 'index'
       }
@@ -304,12 +304,11 @@ new Vue({
 }
 ```
 
-The main advantage over adding an if statement within the get function is that when the computation is
-not rerun you are able to still access the old value.
+The main advantage over adding an `if` statement within the get function is that the old value is still accessible even if the computation is not re-run.
 
 ## Lazy properties
 
-Normally, computed properties are run both immediately, and as necessary when their dependencies change.
+Normally, computed properties are both run immediately, and re-run as necessary when their dependencies change.
 With async computed properties, you sometimes don't want that. With `lazy: true`, an async computed
 property will only be computed the first time it's accessed.
 
@@ -367,7 +366,7 @@ new Vue({
 // This will display a loading message every time the posts are updated:
 // <div v-if="$asyncComputed.posts.updating"> (Re)loading posts </div>
 
-// If you only want to display the message the first times the posts load, you can use the fact that the default value is null:
+// If you only want to display the message the first time the posts load, you can use the fact that the default value is null:
 // <div v-if="$asyncComputed.posts.updating && posts === null"> Loading posts </div>
 
 // You can display an error message if loading the posts failed.
