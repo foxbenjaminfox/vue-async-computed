@@ -96,7 +96,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
       if (pluginOptions.errorHandler === false) return
 
       const handler = (pluginOptions.errorHandler === undefined)
-        ? console.error.bind(console, 'Error evaluating async computed property:')
+        ? console.error.bind(console, 'Error evaluating async computed property', '"' + vm.$options.name + '.' + key + '":')
         : pluginOptions.errorHandler
 
       if (pluginOptions.useRawError) {
