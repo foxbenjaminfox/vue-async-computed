@@ -158,9 +158,9 @@ function getterFn (key, fn) {
     const nonLazy = getter
     getter = function lazyGetter () {
       if (isLazyActive(this, key)) {
-        return nonLazy.call(this)
-      } else {
         return silentGetLazy(this, key)
+      } else {
+        return nonLazy.call(this)
       }
     }
   }
