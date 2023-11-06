@@ -1,0 +1,51 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        # Keep in sync
+        node-version: 20.x
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      id: cache
+      with:
+        # Caching node_modules isn't recommended because it can break across
+        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
+        # But we pin the node version, and we don't update it that often anyways. And
+        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
+        # `node_modules` directly.
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+
+  tests:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v3
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - run: npm run lint
+    - run: npm run test
