@@ -36,10 +36,12 @@ const AsyncComputed = {
 }
 
 function getAsyncComputedMixin (pluginOptions = {}) {
+  /** @type {import('vue').ComponentOptionsMixin} */
   return {
     data () {
       return {
         _asyncComputed: {},
+        _asyncComputedIsMounted: false,
       }
     },
     computed: {
@@ -73,7 +75,14 @@ function getAsyncComputedMixin (pluginOptions = {}) {
       for (const key in this.$options.asyncComputed || {}) {
         handleAsyncComputedPropetyChanges(this, key, pluginOptions)
       }
-    }
+    },
+
+    mounted () {
+      this._asyncComputedIsMounted = true
+    },
+    beforeUnmount () {
+      this._asyncComputedIsMounted = false
+    },
   }
 }
 const AsyncComputedMixin = getAsyncComputedMixin()
@@ -115,14 +124,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
   vueSet(vm, vm.$data._asyncComputed, key, {
     exception: null,
     update: () => {
-      const mounted = (
-        // Vue 2
-        vm._isDestroyed === false ||
-        // Vue 3
-        // TODO: I think this might be dev environment only
-        ('$' in vm && vm.$.isUnmounted === false)
-      )
-      if (mounted) {
+      if (vm._asyncComputedIsMounted) {
         watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
       }
     }
