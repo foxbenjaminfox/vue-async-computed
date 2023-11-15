@@ -10,7 +10,6 @@ import {
   getterOnly,
   hasOwnProperty,
   setAsyncState,
-  vueSet
 } from './util'
 import { getWatchedGetter } from './watch'
 import {
@@ -23,12 +22,11 @@ const prefix = '_async_computed$'
 /** @type {import('vue').Plugin} */
 const AsyncComputed = {
   install (app, pluginOptions) {
-    // Vue 2 exposes the `computed` merge strategy, but Vue 3 does not.
-    // Vue 3 calls `Object.assign` eventually though, so we can use that.
+    // Use same logic as `computed` merging.
     // See: https://github.com/vuejs/core/blob/32bdc5d1900ceb8df1e8ee33ea65af7b4da61051/packages/runtime-core/src/componentOptions.ts#L1059
-    const mergeStrategy = app.config.optionMergeStrategies.computed || (function (to, from) {
+    const mergeStrategy = function (to, from) {
       return to ? Object.assign(Object.create(null), to, from) : from
-    })
+    }
     app.config.optionMergeStrategies.asyncComputed = mergeStrategy
 
     app.mixin(getAsyncComputedMixin(pluginOptions))
@@ -107,7 +105,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
       if (thisPromise !== promiseId) return
 
       setAsyncState(vm, key, 'error')
-      vueSet(vm, vm.$data._asyncComputed[key], 'exception', err)
+      vm.$data._asyncComputed[key].exception = err
       if (pluginOptions.errorHandler === false) return
 
       const handler = (pluginOptions.errorHandler === undefined)
@@ -121,14 +119,14 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
       }
     })
   }
-  vueSet(vm, vm.$data._asyncComputed, key, {
+  vm.$data._asyncComputed[key] = {
     exception: null,
     update: () => {
       if (vm._asyncComputedIsMounted) {
         watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
       }
     }
-  })
+  }
   setAsyncState(vm, key, 'updating')
   vm.$watch(prefix + key, watcher, { immediate: true })
 }

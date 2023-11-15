@@ -49,7 +49,7 @@
   },
   "homepage": "https://github.com/foxbenjaminfox/vue-async-computed#readme",
   "peerDependencies": {
-    "vue": "~2 || ~3"
+    "vue": "~3"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
