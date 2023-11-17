@@ -23,7 +23,6 @@
     "babel-umd": "babel --optional runtime dist/vue-async-computed.esnext.js --out-file dist/vue-async-computed.js",
     "babel-esm": "babel --optional runtime dist/vue-async-computed.esm.esnext.js --out-file dist/vue-async-computed.esm.js",
     "babel": "npm run babel-umd -s && npm run babel-esm -s",
-    "postbuild": "vitest run",
     "prepublishOnly": "npm run build -s",
     "patch": "npm version patch && npm publish",
     "minor": "npm version minor && npm publish",

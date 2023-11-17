@@ -33,7 +33,23 @@ jobs:
     - if: steps.cache.outputs.cache-hit != 'true'
       run: npm install
 
-  tests:
+  build:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v3
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - run: npm run build
+
+  lint:
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -48,4 +64,19 @@ jobs:
         path: 'node_modules'
         key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
     - run: npm run lint
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v3
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
     - run: npm run test
