@@ -14,7 +14,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "watch": "watch 'npm run build' src test",
-    "test": "vitest",
+    "test": "vitest run",
     "prebuild": "npm run lint -s && npm run clean -s && mkdirp dist",
     "build": "npm run rollup -s && npm run babel -s",
     "rollup-esm": "rollup src/index.js --output.format esm --name AsyncComputed --output.file dist/vue-async-computed.esm.esnext.js",
