@@ -1,20 +1,25 @@
-import test from "tape"
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import AsyncComputed from "../src"
-import Vue from 'vue'
+import { createApp, defineComponent } from 'vue'
 
-const baseErrorCallback = () => {
-  throw new Error('Unexpected error thrown')
+function newVue (component, pluginOpts = {}) {
+  // Provide default template to silence warnings
+  app = createApp(Object.assign({ template: '<div/>' }, component))
+  app.use(AsyncComputed, pluginOpts)
+  return app.mount(document.body)
 }
 
-const pluginOptions = {
-  errorHandler: msg => baseErrorCallback(msg),
-}
+let app = null
+beforeEach(() => {
+  vi.useFakeTimers()
+})
+afterEach(() => {
+  vi.restoreAllMocks()
+  app.unmount()
+})
 
-Vue.use(AsyncComputed, pluginOptions)
-
-test("Async computed values are computed", t => {
-  t.plan(4)
-  const vm = new Vue({
+test("Async computed values are computed", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         return new Promise(resolve => {
@@ -28,32 +33,30 @@ test("Async computed values are computed", t => {
       }
     }
   })
-  t.equal(vm.a, null)
-  t.equal(vm.b, null)
-  vm.$watch('a', function (val) {
-    t.equal(val, 'done')
-  })
-  vm.$watch('b', function (val) {
-    t.equal(val, 1337)
-  })
+
+  expect(vm.a).toBeNull()
+  expect(vm.b).toBeNull()
+  await vi.runAllTimersAsync()
+  expect(vm.a).toBe('done')
+  expect(vm.b).toBe(1337)
 })
 
-test("An async computed value which is an pre-resolved promise updates at the next tick", t => {
-  t.plan(2)
-  const vm = new Vue({
+test("An async computed value which is an pre-resolved promise updates at the next tick", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         return Promise.resolve('done')
       }
     }
   })
-  t.equal(vm.a, null)
-  Vue.nextTick(() => t.equal(vm.a, 'done'))
+
+  expect(vm.a).toBeNull()
+  await vm.$nextTick()
+  expect(vm.a).toBe('done')
 })
 
-test("Sync and async computed data work together", t => {
-  t.plan(4)
-  const vm = new Vue({
+test("Sync and async computed data work together", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         return new Promise(resolve => {
@@ -67,19 +70,18 @@ test("Sync and async computed data work together", t => {
       }
     }
   })
-  t.equal(vm.a, null)
 
-  t.equal(vm.b, 0)
+  expect(vm.a).toBeNull()
+  expect(vm.b).toBe(0)
 
-  vm.$watch('a', function (val) {
-    t.equal(val, 'done')
-    t.equal(vm.b, 0)
-  })
+  await vi.runAllTimersAsync()
+
+  expect(vm.a).toBe('done')
+  expect(vm.b).toBe(0)
 })
 
-test("Async values are properly recalculated", t => {
-  t.plan(6)
-  const vm = new Vue({
+test("Async values are properly recalculated", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         const data = this.x
@@ -97,26 +99,27 @@ test("Async values are properly recalculated", t => {
       x: 0
     }
   })
-  t.equal(vm.a, null)
-  t.equal(vm.x, 0)
 
-  const unwatch = vm.$watch('a', function (val) {
-    t.equal(val, 0)
-    unwatch()
-    this.x = 1
-    t.equal(vm.a, 0)
-    vm.$watch('a', function (val) {
-      t.equal(val, 1)
-    })
-  })
-  vm.$watch('b', function (val) {
-    t.equal(val, 'done')
-  })
+  expect(vm.a).toBeNull()
+  expect(vm.b).toBeNull()
+  expect(vm.x).toBe(0)
+
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm.a).toBe(0)
+  expect(vm.b).toBeNull()
+  expect(vm.x).toBe(0)
+
+  vm.x = 1
+  expect(vm.a).toBe(0)
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm.a).toBe(1)
+
+  await vi.advanceTimersByTimeAsync(20)
+  expect(vm.b).toBe('done')
 })
 
-test("Old async values are properly invalidated", t => {
-  t.plan(2)
-  const vm = new Vue({
+test("Old async values are properly invalidated", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         return new Promise(resolve => {
@@ -128,16 +131,19 @@ test("Old async values are properly invalidated", t => {
       waitTime: 40
     }
   })
-  t.equal(vm.a, null)
-  setTimeout(() => { vm.waitTime = 10 }, 10)
-  vm.$watch('a', function (val) {
-    t.equal(val, 10) // Not 40, even though we don't cancel the $watch
-  })
+
+  expect(vm.a).toBeNull()
+  await vi.advanceTimersByTimeAsync(10)
+  vm.waitTime = 10
+  expect(vm.a).toBeNull()
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm.a).toBe(10)
+  await vi.runAllTimersAsync()
+  expect(vm.a).toBe(10) // Not 40, even though the promise was created with 40
 })
 
-test("Having only sync computed data still works", t => {
-  t.plan(2)
-  const vm = new Vue({
+test("Having only sync computed data still works", async () => {
+  const vm = newVue({
     computed: {
       a () {
         return this.x
@@ -147,53 +153,55 @@ test("Having only sync computed data still works", t => {
       x: 2
     }
   })
-  t.equal(vm.a, 2)
-  vm.$watch('a', function (val) {
-    t.equal(val, 3)
-  })
+  expect(vm.a).toBe(2)
+
+  const watchListener = vi.fn()
+  vm.$watch('a', watchListener)
   vm.x++
+  expect(vm.a).toBe(3)
+  await vm.$nextTick()
+  expect(watchListener).toHaveBeenCalledTimes(1)
+  expect(watchListener).toHaveBeenCalledWith(3, 2, expect.anything())
 })
 
-test("Errors in computed properties are handled", t => {
-  t.plan(3)
-  const vm = new Vue({
+test("Errors in computed properties are handled", async () => {
+  const errorHandler = vi.fn()
+  const vm = newVue({
     asyncComputed: {
       a () {
         return Promise.reject(new Error('error'))
       }
     }
-  })
-  t.equal(vm.a, null)
-  pluginOptions.errorHandler = stack => {
-    t.equal(vm.a, null)
-    t.equal(stack.slice(0, 13), 'Error: error\n')
-    pluginOptions.errorHandler = baseErrorCallback
-  }
+  }, { errorHandler })
+  expect(vm.a).toBeNull()
+  await vm.$nextTick() // Triggers the asyncComputed body
+  await vm.$nextTick() // Triggers the reject
+  expect(vm.a).toBeNull()
+  expect(errorHandler).toHaveBeenCalledTimes(1)
+  expect(errorHandler.mock.lastCall[0].slice(0, 13)).toBe('Error: error\n')
 })
 
-test("Errors in computed properties are handled, with useRawError", t => {
-  pluginOptions.useRawError = true
-  t.plan(3)
-  const vm = new Vue({
+test("Errors in computed properties are handled, with useRawError", async () => {
+  const errorHandler = vi.fn()
+
+  const vm = newVue({
     asyncComputed: {
       a () {
         // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('error')
       }
     }
-  })
-  t.equal(vm.a, null)
-  pluginOptions.errorHandler = err => {
-    t.equal(vm.a, null)
-    t.equal(err, 'error')
-    pluginOptions.errorHandler = baseErrorCallback
-    pluginOptions.useRawError = false
-  }
+  }, { errorHandler, useRawError: true })
+  expect(vm.a).toBeNull()
+  await vm.$nextTick() // Triggers the asyncComputed body
+  await vm.$nextTick() // Triggers the reject
+  expect(vm.a).toBeNull()
+  expect(errorHandler).toHaveBeenCalledTimes(1)
+  expect(errorHandler.mock.lastCall[0]).toBe('error')
 })
 
-test("Multiple asyncComputed objects are handled the same as normal computed property objects", t => {
-  t.plan(3)
-  const vm = new Vue({
+test("Multiple asyncComputed objects are handled the same as normal computed property objects", async () => {
+  const vm = newVue({
     mixins: [{
       asyncComputed: {
         a () {
@@ -213,16 +221,17 @@ test("Multiple asyncComputed objects are handled the same as normal computed pro
       }
     }
   })
-  Vue.nextTick(() => {
-    t.equal(vm.a, 'vm-a')
-    t.equal(vm.b, 'mixin-b')
-    t.equal(vm.c, 'vm-c')
-  })
+  await vm.$nextTick()
+  expect(vm.a).toBe('vm-a')
+  expect(vm.b).toBe('mixin-b')
+  expect(vm.c).toBe('vm-c')
 })
 
-test("Async computed values can have defaults", t => {
-  t.plan(8)
-  const vm = new Vue({
+test("Async computed values can have defaults", async () => {
+  const xWatcher = vi.fn()
+  const computedFromX = vi.fn(function () { return this.x })
+
+  const vm = newVue({
     asyncComputed: {
       x: {
         default: false,
@@ -243,36 +252,34 @@ test("Async computed values can have defaults", t => {
       x: {
         deep: true,
         immediate: true,
-        handler (newValue, oldValue) {
-          if (oldValue === undefined) {
-            t.equal(newValue, false, 'watch: x should default to false')
-          }
-        }
+        handler: xWatcher,
       },
     },
     computed: {
-      computedFromX: function () {
-        t.equal(this.x, false, 'computed: x should default to false')
-        return this.x
-      },
+      computedFromX,
     },
   })
 
-  const computed = vm.computedFromX // Force computed execution
+  expect(vm.x).toBe(false) // x should default to false
+  expect(vm.y).toBeNull() // y doesn't have a default
+  expect(vm.z).toBeNull() // z doesn't have a default despite being defined with an object
 
-  t.equal(vm.x, false, 'x should default to false')
-  t.equal(vm.y, null, 'y doesn\'t have a default')
-  t.equal(vm.z, null, 'z doesn\'t have a default despite being defined with an object')
-  Vue.nextTick(() => {
-    t.equal(vm.x, true, 'x resolves to true')
-    t.equal(vm.y, true, 'y resolves to true')
-    t.equal(vm.z, true, 'z resolves to true')
-  })
+  expect(xWatcher).toHaveBeenCalledTimes(1)
+  expect(xWatcher).toHaveBeenCalledWith(false, undefined, expect.anything())
+  expect(computedFromX).toHaveBeenCalledTimes(0)
+  const computed = vm.computedFromX // Force computed execution
+  expect(computed).toBe(false)
+  expect(xWatcher).toHaveBeenCalledTimes(1)
+  expect(computedFromX).toHaveBeenCalledTimes(1)
+
+  await vm.$nextTick()
+  expect(vm.x).toBe(true) // x resolves to true
+  expect(vm.y).toBe(true) // y resolves to true
+  expect(vm.z).toBe(true) // z resolves to true
 })
 
-test("Default values can be functions", t => {
-  t.plan(4)
-  const vm = new Vue({
+test("Default values can be functions", async () => {
+  const vm = newVue({
     data: {
       x: 1
     },
@@ -291,17 +298,15 @@ test("Default values can be functions", t => {
       }
     }
   })
-  t.equal(vm.y, 2)
-  t.equal(vm.z, 1)
-  Vue.nextTick(() => {
-    t.equal(vm.y, 3)
-    t.equal(vm.z, 4)
-  })
+  expect(vm.y).toBe(2)
+  expect(vm.z).toBe(1)
+  await vm.$nextTick()
+  expect(vm.y).toBe(3)
+  expect(vm.z).toBe(4)
 })
 
-test("Async computed values can be written to, and then will be properly overridden", t => {
-  t.plan(5)
-  const vm = new Vue({
+test("Async computed values can be written to, and then will be properly overridden", async () => {
+  const vm = newVue({
     data: {
       x: 1
     },
@@ -314,27 +319,20 @@ test("Async computed values can be written to, and then will be properly overrid
       }
     }
   })
-  Vue.nextTick(() => {
-    t.equal(vm.y, 2)
-    const unwatch = vm.$watch('y', function (val) {
-      t.equal(val, 1)
-      unwatch()
-      vm.x = 4
-      t.equal(vm.y, 1)
-      Vue.nextTick(() => {
-        t.equal(vm.y, 5)
-        vm.$watch('y', function (val) {
-          t.equal(val, 4)
-        })
-      })
-    })
-  })
+  expect(vm.y).toBe(2)
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm.y).toBe(1)
+  vm.x = 4
+  expect(vm.y).toBe(1)
+  await vm.$nextTick()
+  expect(vm.y).toBe(5)
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm.y).toBe(4)
 })
 
-test("Watchers rerun the computation when a value changes", t => {
-  t.plan(4)
+test("Watchers rerun the computation when a value changes", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     data: {
       x: 0,
       y: 2,
@@ -351,29 +349,24 @@ test("Watchers rerun the computation when a value changes", t => {
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    vm.x--
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 3.
-        t.equal(vm.z, 3)
-      })
-    })
-  })
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(vm.z).toBe(2)
+  i++
+  vm.x--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished and z is 3
+  expect(vm.z).toBe(3)
 })
 
-test("shouldUpdate controls when to rerun the computation when a value changes", t => {
-  t.plan(6)
+test("shouldUpdate controls when to rerun the computation when a value changes", async () => {
   let i = 0
-  const vm = new Vue({
+  let getCallCount = 0
+  const vm = newVue({
     data: {
       x: 0,
       y: 2,
@@ -381,6 +374,7 @@ test("shouldUpdate controls when to rerun the computation when a value changes",
     asyncComputed: {
       z: {
         get () {
+          getCallCount++
           return Promise.resolve(i + this.y)
         },
         shouldUpdate () {
@@ -389,45 +383,43 @@ test("shouldUpdate controls when to rerun the computation when a value changes",
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    // update x so it will be 1
-    // should update returns false now
-    vm.x++
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 2 since should update returned false.
-        t.equal(vm.z, 2)
-        // update x so it will be 2
-        // should update returns true now
-        vm.x++
-        Vue.nextTick(() => {
-          // This tick, Vue registers the change
-          // in the watcher, and reevaluates
-          // the getter function
-          t.equal(vm.z, 2)
-          Vue.nextTick(() => {
-            // Now in this tick the promise has
-            // resolved, and z is 3.
-            t.equal(vm.z, 3)
-          })
-        })
-      })
-    })
-  })
+  expect(getCallCount).toBe(1)
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(getCallCount).toBe(1)
+  expect(vm.z).toBe(2)
+  i++
+  // update x so it will be 1
+  // should update returns false now
+  vm.x++
+  expect(getCallCount).toBe(1)
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  expect(vm.z).toBe(2)
+  await vm.$nextTick()
+  // Now in this tick the promise has
+  // resolved, and z is 2 since should update returned false.
+  expect(vm.z).toBe(2)
+  // update x so it will be 2
+  // should update returns true now
+  expect(getCallCount).toBe(1)
+  vm.x++
+  expect(getCallCount).toBe(1)
+  await vm.$nextTick()
+  expect(getCallCount).toBe(2)
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished and z is 3
+  expect(vm.z).toBe(3)
 })
 
-test("Watchers trigger but shouldUpdate can still block their updates", t => {
-  t.plan(6)
+test("Watchers trigger but shouldUpdate can still block their updates", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     data: {
       canUpdate: true,
       x: 0,
@@ -448,111 +440,89 @@ test("Watchers trigger but shouldUpdate can still block their updates", t => {
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    vm.x--
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 3.
-        t.equal(vm.z, 3)
-        // We stop all updates from now on
-        vm.canUpdate = false
-        i++
-        vm.x--
-        Vue.nextTick(() => {
-          // This tick, Vue registers the change
-          // in the watcher, and reevaluates
-          // the getter function but no update
-          t.equal(vm.z, 3)
-          Vue.nextTick(() => {
-            // Now in this tick the promise has
-            // resolved, and z is still 3.
-            t.equal(vm.z, 3)
-          })
-        })
-      })
-    })
-  })
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(vm.z).toBe(2)
+  i++
+  vm.x--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished
+  expect(vm.z).toBe(3)
+  // We stop all updates from now on
+  vm.canUpdate = false
+  i++
+  vm.x--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function but no update
+  expect(vm.z).toBe(3)
+  await vm.$nextTick()
+  // Now in this tick the promise has
+  // resolved, and z is still 3.
+  expect(vm.z).toBe(3)
 })
 
-test("The default default value can be set in the plugin options", t => {
-  t.plan(2)
-  pluginOptions.default = 53
-  const vm = new Vue({
+test("The default default value can be set in the plugin options", async () => {
+  const vm = newVue({
     asyncComputed: {
       x () {
         return Promise.resolve(0)
       }
     }
-  })
-  t.equal(vm.x, 53)
-  Vue.nextTick(() => {
-    t.equal(vm.x, 0)
-    delete pluginOptions.default
-  })
+  }, { default: 53 })
+  expect(vm.x).toBe(53)
+  await vm.$nextTick()
+  expect(vm.x).toBe(0)
 })
 
-test("The default default value can be set to undefined in the plugin options", t => {
-  t.plan(2)
-  pluginOptions.default = undefined
-  const vm = new Vue({
+test("The default default value can be set to undefined in the plugin options", async () => {
+  const vm = newVue({
     asyncComputed: {
       x () {
         return Promise.resolve(0)
       }
     }
-  })
-  t.equal(vm.x, undefined)
-  Vue.nextTick(() => {
-    t.equal(vm.x, 0)
-    delete pluginOptions.default
-  })
+  }, { default: undefined })
+  expect(vm.x).toBeUndefined()
+  await vm.$nextTick()
+  expect(vm.x).toBe(0)
 })
 
-test("Handle an async computed value returning synchronously", t => {
-  t.plan(2)
-  const vm = new Vue({
+test("Handle an async computed value returning synchronously", async () => {
+  const vm = newVue({
     asyncComputed: {
       x () {
         return 1
       }
     }
   })
-  t.equal(vm.x, null)
-  Vue.nextTick(() => {
-    t.equal(vm.x, 1)
-  })
+  expect(vm.x).toBeNull()
+  await vm.$nextTick()
+  expect(vm.x).toBe(1)
 })
 
-test("Work correctly with Vue.extend", t => {
-  t.plan(2)
-  const SubVue = Vue.extend({
+test("Work correctly with Vue.extend", async () => {
+  const SubVue = defineComponent({
     asyncComputed: {
       x () {
         return Promise.resolve(1)
       }
     }
   })
-  const vm = new SubVue({})
-
-  t.equal(vm.x, null)
-  Vue.nextTick(() => {
-    t.equal(vm.x, 1)
-  })
+  const vm = newVue({ extends: SubVue })
+  expect(vm.x).toBeNull()
+  await vm.$nextTick()
+  expect(vm.x).toBe(1)
 })
 
-test("Async computed values can be calculated lazily", t => {
-  t.plan(7)
-
+test("Async computed values can be calculated lazily", async () => {
   let called = false
-  const vm = new Vue({
+  const vm = newVue({
     asyncComputed: {
       a: {
         lazy: true,
@@ -564,26 +534,20 @@ test("Async computed values can be calculated lazily", t => {
     }
   })
 
-  t.equal(called, false)
-  Vue.nextTick(() => {
-    t.equal(called, false)
-    t.equal(vm.a, null)
-    t.equal(vm.a, null)
-    t.equal(called, false)
-    Vue.nextTick(() => {
-      t.equal(called, true)
-      Vue.nextTick(() => {
-        t.equal(vm.a, 10)
-      })
-    })
-  })
+  expect(called).toBe(false)
+  await vm.$nextTick()
+  expect(called).toBe(false)
+  expect(vm.a).toBe(null)
+  expect(vm.a).toBe(null)
+  expect(called).toBe(false)
+  await vm.$nextTick()
+  expect(called).toBe(true)
+  expect(vm.a).toBe(10)
 })
 
-test("Async computed values aren't lazy with { lazy: false }", t => {
-  t.plan(4)
-
+test("Async computed values aren't lazy with { lazy: false }", async () => {
   let called = false
-  const vm = new Vue({
+  const vm = newVue({
     asyncComputed: {
       a: {
         lazy: false,
@@ -595,19 +559,16 @@ test("Async computed values aren't lazy with { lazy: false }", t => {
     }
   })
 
-  t.equal(called, true)
-  t.equal(vm.a, null)
-  Vue.nextTick(() => {
-    t.equal(called, true)
-    t.equal(vm.a, 10)
-  })
+  expect(called).toBe(true)
+  expect(vm.a).toBeNull()
+  await vm.$nextTick()
+  expect(called).toBe(true)
+  expect(vm.a).toBe(10)
 })
 
-test("Async computed values can be calculated lazily with a default", t => {
-  t.plan(7)
-
+test("Async computed values can be calculated lazily with a default", async () => {
   let called = false
-  const vm = new Vue({
+  const vm = newVue({
     asyncComputed: {
       a: {
         lazy: true,
@@ -620,24 +581,19 @@ test("Async computed values can be calculated lazily with a default", t => {
     }
   })
 
-  t.equal(called, false)
-  Vue.nextTick(() => {
-    t.equal(called, false)
-    t.equal(vm.a, 3)
-    t.equal(vm.a, 3)
-    t.equal(called, false)
-    Vue.nextTick(() => {
-      t.equal(called, true)
-      Vue.nextTick(() => {
-        t.equal(vm.a, 4)
-      })
-    })
-  })
+  expect(called).toBe(false)
+  await vm.$nextTick()
+  expect(called).toBe(false)
+  expect(vm.a).toBe(3)
+  expect(vm.a).toBe(3)
+  expect(called).toBe(false)
+  await vm.$nextTick()
+  expect(called).toBe(true)
+  expect(vm.a).toBe(4)
 })
 
-test("Underscore prefixes work (issue #33)", t => {
-  t.plan(4)
-  const vm = new Vue({
+test("Underscore prefixes work (issue #33)", async () => {
+  const vm = newVue({
     computed: {
       sync_a () {
         return 1
@@ -646,16 +602,10 @@ test("Underscore prefixes work (issue #33)", t => {
         return 2
       }
     },
-    data () {
-      return { a_complete: false }
-    },
     asyncComputed: {
       _async_a () {
         return new Promise(resolve => {
-          setTimeout(() => {
-            resolve(this.sync_a)
-            this.a_complete = true
-          }, 10)
+          setTimeout(() => resolve(this.sync_a), 10)
         })
       },
       async_b () {
@@ -665,23 +615,17 @@ test("Underscore prefixes work (issue #33)", t => {
       }
     }
   })
-  t.equal(vm._async_a, null)
-  t.equal(vm.async_b, null)
+  expect(vm._async_a).toBeNull()
+  expect(vm.async_b).toBeNull()
   // _async_a is not reactive, because
   // it begins with an underscore
-  // so we'll watch 'a_complete' to know once
-  // async_a has been computed.
-  vm.$watch('a_complete', function (val) {
-    t.equal(vm._async_a, 1)
-  })
-  vm.$watch('async_b', function (val) {
-    t.equal(val, 2)
-  })
+  await vi.advanceTimersByTimeAsync(10)
+  expect(vm._async_a).toBe(1)
+  expect(vm.async_b).toBe(2)
 })
 
-test("shouldUpdate works with lazy", t => {
-  t.plan(8)
-  const vm = new Vue({
+test("shouldUpdate works with lazy", async () => {
+  const vm = newVue({
     data: {
       a: 0,
       x: true,
@@ -709,44 +653,32 @@ test("shouldUpdate works with lazy", t => {
     }
   })
 
-  Vue.nextTick(() => {
-    t.equal(vm.b, null)
-    t.equal(vm.c, null)
-    Vue.nextTick(() => {
-      Vue.nextTick(() => {
-        t.equal(vm.b, 0)
-        t.equal(vm.c, null)
-        vm.a++
-        Vue.nextTick(() => {
-          Vue.nextTick(() => {
-            t.equal(vm.b, 1)
-            t.equal(vm.c, null)
-            vm.x = false
-            vm.y = true
-            vm.a++
-            Vue.nextTick(() => {
-              Vue.nextTick(() => {
-                t.equal(vm.b, 1)
-                t.equal(vm.c, 2)
-              })
-            })
-          })
-        })
-      })
-    })
-  })
+  await vm.$nextTick()
+  expect(vm.b).toBe(null)
+  expect(vm.c).toBe(null)
+  await vm.$nextTick()
+  expect(vm.b).toBe(0)
+  expect(vm.c).toBe(null)
+  vm.a++
+  await vm.$nextTick()
+  expect(vm.b).toBe(1)
+  expect(vm.c).toBe(null)
+  vm.x = false
+  vm.y = true
+  vm.a++
+  await vm.$nextTick()
+  expect(vm.b).toBe(1)
+  expect(vm.c).toBe(2)
 })
 
-test("$asyncComputed is empty if there are no async computed properties", t => {
-  t.plan(1)
-  const vm = new Vue({
+test("$asyncComputed is empty if there are no async computed properties", () => {
+  const vm = newVue({
   })
-  t.deepEqual(vm.$asyncComputed, {})
+  expect(vm.$asyncComputed).toStrictEqual({})
 })
 
-test("$asyncComputed[name] is created for all async computed properties", t => {
-  t.plan(15)
-  const vm = new Vue({
+test("$asyncComputed[name] is created for all async computed properties", async () => {
+  const vm = newVue({
     asyncComputed: {
       a () {
         return Promise.resolve(1)
@@ -756,52 +688,50 @@ test("$asyncComputed[name] is created for all async computed properties", t => {
       }
     }
   })
-  t.deepEqual(Object.keys(vm.$asyncComputed), ['a', 'b'])
-  t.equal(vm.$asyncComputed.a.state, 'updating')
-  t.equal(vm.$asyncComputed.b.state, 'updating')
-  t.equal(vm.$asyncComputed.a.updating, true)
-  t.equal(vm.$asyncComputed.a.success, false)
-  t.equal(vm.$asyncComputed.a.error, false)
-  t.equal(vm.$asyncComputed.a.exception, null)
+  expect(Object.keys(vm.$asyncComputed)).toStrictEqual(['a', 'b'])
+  expect(vm.$asyncComputed.a.state).toBe('updating')
+  expect(vm.$asyncComputed.b.state).toBe('updating')
+  expect(vm.$asyncComputed.a.updating).toBe(true)
+  expect(vm.$asyncComputed.a.success).toBe(false)
+  expect(vm.$asyncComputed.a.error).toBe(false)
+  expect(vm.$asyncComputed.a.exception).toBe(null)
 
-  Vue.nextTick(() => {
-    t.equal(vm.a, 1)
-    t.equal(vm.b, 2)
-    t.equal(vm.$asyncComputed.a.state, 'success')
-    t.equal(vm.$asyncComputed.b.state, 'success')
-    t.equal(vm.$asyncComputed.a.updating, false)
-    t.equal(vm.$asyncComputed.a.success, true)
-    t.equal(vm.$asyncComputed.a.error, false)
-    t.equal(vm.$asyncComputed.a.exception, null)
-  })
+  await vm.$nextTick()
+  expect(vm.a).toBe(1)
+  expect(vm.b).toBe(2)
+  expect(vm.$asyncComputed.a.state).toBe('success')
+  expect(vm.$asyncComputed.b.state).toBe('success')
+  expect(vm.$asyncComputed.a.updating).toBe(false)
+  expect(vm.$asyncComputed.a.success).toBe(true)
+  expect(vm.$asyncComputed.a.error).toBe(false)
+  expect(vm.$asyncComputed.a.exception).toBe(null)
 })
 
-test("$asyncComputed[name] handles errors and captures exceptions", t => {
-  t.plan(7)
-  const vm = new Vue({
+test("$asyncComputed[name] handles errors and captures exceptions", async () => {
+  const errorHandler = vi.fn()
+  const vm = newVue({
     asyncComputed: {
       a () {
         // eslint-disable-next-line prefer-promise-reject-errors
         return Promise.reject('error-message')
       }
     }
-  })
-  t.equal(vm.$asyncComputed.a.state, 'updating')
-  pluginOptions.errorHandler = stack => {
-    t.equal(vm.a, null)
-    t.equal(vm.$asyncComputed.a.state, 'error')
-    t.equal(vm.$asyncComputed.a.updating, false)
-    t.equal(vm.$asyncComputed.a.success, false)
-    t.equal(vm.$asyncComputed.a.error, true)
-    t.equal(vm.$asyncComputed.a.exception, 'error-message')
-    pluginOptions.errorHandler = baseErrorCallback
-  }
+  }, { errorHandler })
+  expect(vm.$asyncComputed.a.state).toBe('updating')
+  await vm.$nextTick()
+  await vm.$nextTick()
+  expect(errorHandler).toHaveBeenCalledTimes(1)
+  expect(vm.a).toBe(null)
+  expect(vm.$asyncComputed.a.state).toBe('error')
+  expect(vm.$asyncComputed.a.updating).toBe(false)
+  expect(vm.$asyncComputed.a.success).toBe(false)
+  expect(vm.$asyncComputed.a.error).toBe(true)
+  expect(vm.$asyncComputed.a.exception).toBe('error-message')
 })
 
-test("$asyncComputed[name].update triggers re-evaluation", t => {
+test("$asyncComputed[name].update triggers re-evaluation", async () => {
   let valueToReturn = 1
-  t.plan(5)
-  const vm = new Vue({
+  const vm = newVue({
     asyncComputed: {
       a () {
         return new Promise(resolve => {
@@ -811,28 +741,21 @@ test("$asyncComputed[name].update triggers re-evaluation", t => {
     }
   })
 
-  Vue.nextTick(() => {
-    t.equal(vm.a, 1)
-    valueToReturn = 2
-    t.equal(vm.$asyncComputed.a.state, 'success')
-    vm.$asyncComputed.a.update()
-    t.equal(vm.$asyncComputed.a.state, 'updating')
-
-    Vue.nextTick(() => {
-      t.equal(vm.a, 2)
-      valueToReturn = 3
-
-      Vue.nextTick(() => {
-        t.equal(vm.a, 2)
-      })
-    })
-  })
+  await vm.$nextTick()
+  expect(vm.a).toBe(1)
+  valueToReturn = 2
+  expect(vm.$asyncComputed.a.state).toBe('success')
+  vm.$asyncComputed.a.update()
+  expect(vm.$asyncComputed.a.state).toBe('updating')
+  await vm.$nextTick()
+  expect(vm.a).toBe(2)
+  valueToReturn = 3
+  expect(vm.a).toBe(2)
 })
 
-test("$asyncComputed[name].update has the correct execution context", t => {
-  t.plan(8)
+test("$asyncComputed[name].update has the correct execution context", async () => {
   let addedValue = 1
-  const vm = new Vue({
+  const vm = newVue({
     data () {
       return {
         valueToReturn: 1,
@@ -854,45 +777,41 @@ test("$asyncComputed[name].update has the correct execution context", t => {
     },
   })
 
-  Vue.nextTick(() => {
-    //  case 1: a is a function
-    t.equal(vm.a, 2)
-    t.equal(vm.$asyncComputed.a.state, 'success')
-    //  case 2: b is an object with a getter function
-    t.equal(vm.b, 2)
-    t.equal(vm.$asyncComputed.b.state, 'success')
+  await vm.$nextTick()
+  // case 1: a is a function
+  expect(vm.a).toBe(2)
+  expect(vm.$asyncComputed.a.state).toBe('success')
+  // case 2: b is an object with a getter function
+  expect(vm.b).toBe(2)
+  expect(vm.$asyncComputed.b.state).toBe('success')
 
-    addedValue = 4
+  addedValue = 4
 
-    vm.$asyncComputed.a.update()
-    t.equal(vm.$asyncComputed.a.state, 'updating')
+  vm.$asyncComputed.a.update()
+  expect(vm.$asyncComputed.a.state).toBe('updating')
 
-    vm.$asyncComputed.b.update()
-    t.equal(vm.$asyncComputed.b.state, 'updating')
+  vm.$asyncComputed.b.update()
+  expect(vm.$asyncComputed.b.state).toBe('updating')
 
-    Vue.nextTick(() => {
-      t.equal(vm.a, 5)
-      t.equal(vm.b, 5)
-    })
-  })
+  await vm.$nextTick()
+  expect(vm.a).toBe(5)
+  expect(vm.b).toBe(5)
 })
 
-test("Plain components with neither `data` nor `asyncComputed` still work (issue #50)", t => {
-  t.plan(1)
-  const vm = new Vue({
+test("Plain components with neither `data` nor `asyncComputed` still work (issue #50)", async () => {
+  const vm = newVue({
     computed: {
       a () {
         return 1
       }
     }
   })
-  t.equal(vm.a, 1)
+  expect(vm.a).toBe(1)
 })
 
-test('Data of component still work as function and got vm', t => {
-  t.plan(1)
+test('Data of component still work as function and got vm', async () => {
   let _vmContext = null
-  const vm = new Vue({
+  const vm = newVue({
     data (vmContext) {
       _vmContext = vmContext
     },
@@ -903,13 +822,12 @@ test('Data of component still work as function and got vm', t => {
     },
 
   })
-  t.equal(vm, _vmContext)
+  expect(vm).toBe(_vmContext)
 })
 
-test("Watch as a function", t => {
-  t.plan(4)
+test("Watch as a function", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     data: {
       y: 2,
       obj: {
@@ -928,29 +846,23 @@ test("Watch as a function", t => {
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    vm.obj.t--
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 3.
-        t.equal(vm.z, 3)
-      })
-    })
-  })
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(vm.z).toBe(2)
+  i++
+  vm.obj.t--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished and z is 3
+  expect(vm.z).toBe(3)
 })
 
-test("Watchers as array with nested path rerun the computation when a value changes", t => {
-  t.plan(4)
+test("Watchers as array with nested path rerun the computation when a value changes", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     data: {
       y: 2,
       obj: {
@@ -966,29 +878,23 @@ test("Watchers as array with nested path rerun the computation when a value chan
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    vm.obj.t--
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 3.
-        t.equal(vm.z, 3)
-      })
-    })
-  })
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(vm.z).toBe(2)
+  i++
+  vm.obj.t--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished and z is 3
+  expect(vm.z).toBe(3)
 })
 
-test("Watch as array with more then one value", t => {
-  t.plan(5)
+test("Watch as array with more then one value", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     data: {
       y: 2,
       obj: {
@@ -1005,38 +911,28 @@ test("Watch as array with more then one value", t => {
       }
     }
   })
-  t.equal(vm.z, null)
-  Vue.nextTick(() => {
-    t.equal(vm.z, 2)
-    i++
-    // checking for nested property
-    vm.obj.t--
-    Vue.nextTick(() => {
-      // This tick, Vue registers the change
-      // in the watcher, and reevaluates
-      // the getter function
-      t.equal(vm.z, 2)
-      Vue.nextTick(() => {
-        // Now in this tick the promise has
-        // resolved, and z is 3.
-        t.equal(vm.z, 3)
-
-        i++
-        // one level and multiple watchers
-        vm.r--
-        Vue.nextTick(() => {
-          Vue.nextTick(() => {
-            t.equal(vm.z, 4)
-          })
-        })
-      })
-    })
-  })
+  expect(vm.z).toBeNull()
+  await vm.$nextTick()
+  expect(vm.z).toBe(2)
+  i++
+  // checking for nested property
+  vm.obj.t--
+  await vm.$nextTick()
+  // This tick, Vue registers the change
+  // in the watcher, and reevaluates
+  // the getter function
+  // And since we 'await', the promise chain
+  // is finished and z is 3
+  expect(vm.z).toBe(3)
+  i++
+  // one level and multiple watchers
+  vm.r--
+  await vm.$nextTick()
+  expect(vm.z).toBe(4)
 })
 
-test("$asyncComputed[name].state resolves to 'success' even if the computed value is 0 (issue #75)", t => {
-  t.plan(13)
-  const vm = new Vue({
+test("$asyncComputed[name].state resolves to 'success' even if the computed value is 0 (issue #75)", async () => {
+  const vm = newVue({
     computed: {
       isUpdating () {
         return this.$asyncComputed.a.updating
@@ -1051,28 +947,26 @@ test("$asyncComputed[name].state resolves to 'success' even if the computed valu
       }
     }
   })
-  t.equal(vm.$asyncComputed.a.state, 'updating')
-  t.equal(vm.$asyncComputed.a.updating, true)
-  t.equal(vm.$asyncComputed.a.success, false)
-  t.equal(vm.$asyncComputed.a.error, false)
-  t.equal(vm.$asyncComputed.a.exception, null)
-  t.equal(vm.isUpdating, true)
+  expect(vm.$asyncComputed.a.state).toBe('updating')
+  expect(vm.$asyncComputed.a.updating).toBe(true)
+  expect(vm.$asyncComputed.a.success).toBe(false)
+  expect(vm.$asyncComputed.a.error).toBe(false)
+  expect(vm.$asyncComputed.a.exception).toBe(null)
+  expect(vm.isUpdating).toBe(true)
 
-  Vue.nextTick(() => {
-    t.equal(vm.a, 0)
-    t.equal(vm.$asyncComputed.a.state, 'success')
-    t.equal(vm.$asyncComputed.a.updating, false)
-    t.equal(vm.$asyncComputed.a.success, true)
-    t.equal(vm.$asyncComputed.a.error, false)
-    t.equal(vm.$asyncComputed.a.exception, null)
-    t.equal(vm.isUpdating, false)
-  })
+  await vm.$nextTick()
+  expect(vm.a).toBe(0)
+  expect(vm.$asyncComputed.a.state).toBe('success')
+  expect(vm.$asyncComputed.a.updating).toBe(false)
+  expect(vm.$asyncComputed.a.success).toBe(true)
+  expect(vm.$asyncComputed.a.error).toBe(false)
+  expect(vm.$asyncComputed.a.exception).toBe(null)
+  expect(vm.isUpdating).toBe(false)
 })
 
-test("$asyncComputed[name].update does nothing if called after the component is destroyed", t => {
-  t.plan(4)
+test("$asyncComputed[name].update does nothing if called after the component is destroyed", async () => {
   let i = 0
-  const vm = new Vue({
+  const vm = newVue({
     asyncComputed: {
       a: {
         async get () {
@@ -1082,14 +976,12 @@ test("$asyncComputed[name].update does nothing if called after the component is 
     }
   })
 
-  t.equal(vm.a, null)
-  Vue.nextTick(() => {
-    t.equal(vm.a, 1)
-    vm.$destroy()
-    vm.$asyncComputed.a.update()
-    Vue.nextTick(() => {
-      t.equal(i, 1)
-      t.equal(vm.a, 1)
-    })
-  })
+  expect(vm.a).toBeNull()
+  await vm.$nextTick()
+  expect(vm.a).toBe(1)
+  app.unmount(vm)
+  vm.$asyncComputed.a.update()
+  await vm.$nextTick()
+  expect(i).toBe(1)
+  expect(vm.a).toBe(1)
 })

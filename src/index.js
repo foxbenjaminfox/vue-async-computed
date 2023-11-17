@@ -19,21 +19,27 @@ import {
 
 const prefix = '_async_computed$'
 
+/** @type {import('vue').Plugin} */
 const AsyncComputed = {
-  install (Vue, pluginOptions) {
-    Vue.config
-      .optionMergeStrategies
-      .asyncComputed = Vue.config.optionMergeStrategies.computed
+  install (app, pluginOptions) {
+    // Use same logic as `computed` merging.
+    // See: https://github.com/vuejs/core/blob/32bdc5d1900ceb8df1e8ee33ea65af7b4da61051/packages/runtime-core/src/componentOptions.ts#L1059
+    const mergeStrategy = function (to, from) {
+      return to ? Object.assign(Object.create(null), to, from) : from
+    }
+    app.config.optionMergeStrategies.asyncComputed = mergeStrategy
 
-    Vue.mixin(getAsyncComputedMixin(pluginOptions))
+    app.mixin(getAsyncComputedMixin(pluginOptions))
   }
 }
 
 function getAsyncComputedMixin (pluginOptions = {}) {
+  /** @type {import('vue').ComponentOptionsMixin} */
   return {
     data () {
       return {
         _asyncComputed: {},
+        _asyncComputedIsMounted: false,
       }
     },
     computed: {
@@ -67,7 +73,14 @@ function getAsyncComputedMixin (pluginOptions = {}) {
       for (const key in this.$options.asyncComputed || {}) {
         handleAsyncComputedPropetyChanges(this, key, pluginOptions)
       }
-    }
+    },
+
+    mounted () {
+      this._asyncComputedIsMounted = true
+    },
+    beforeUnmount () {
+      this._asyncComputedIsMounted = false
+    },
   }
 }
 const AsyncComputedMixin = getAsyncComputedMixin()
@@ -92,7 +105,7 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
       if (thisPromise !== promiseId) return
 
       setAsyncState(vm, key, 'error')
-      vm.$set(vm.$data._asyncComputed[key], 'exception', err)
+      vm.$data._asyncComputed[key].exception = err
       if (pluginOptions.errorHandler === false) return
 
       const handler = (pluginOptions.errorHandler === undefined)
@@ -106,14 +119,14 @@ function handleAsyncComputedPropetyChanges (vm, key, pluginOptions) {
       }
     })
   }
-  vm.$set(vm.$data._asyncComputed, key, {
+  vm.$data._asyncComputed[key] = {
     exception: null,
     update: () => {
-      if (!vm._isDestroyed) {
+      if (vm._asyncComputedIsMounted) {
         watcher(getterOnly(vm.$options.asyncComputed[key]).apply(vm))
       }
     }
-  })
+  }
   setAsyncState(vm, key, 'updating')
   vm.$watch(prefix + key, watcher, { immediate: true })
 }

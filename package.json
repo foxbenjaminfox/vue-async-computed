@@ -14,7 +14,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "watch": "watch 'npm run build' src test",
-    "test": "babel-node --presets env test/index.js | tspec",
+    "test": "vitest",
     "prebuild": "npm run lint -s && npm run clean -s && mkdirp dist",
     "build": "npm run rollup -s && npm run babel -s",
     "rollup-esm": "rollup src/index.js --output.format esm --name AsyncComputed --output.file dist/vue-async-computed.esm.esnext.js",
@@ -23,7 +23,7 @@
     "babel-umd": "babel --optional runtime dist/vue-async-computed.esnext.js --out-file dist/vue-async-computed.js",
     "babel-esm": "babel --optional runtime dist/vue-async-computed.esm.esnext.js --out-file dist/vue-async-computed.esm.js",
     "babel": "npm run babel-umd -s && npm run babel-esm -s",
-    "postbuild": "npm run test -s",
+    "postbuild": "vitest run",
     "prepublishOnly": "npm run build -s",
     "patch": "npm version patch && npm publish",
     "minor": "npm version minor && npm publish",
@@ -49,7 +49,7 @@
   },
   "homepage": "https://github.com/foxbenjaminfox/vue-async-computed#readme",
   "peerDependencies": {
-    "vue": "~2"
+    "vue": "~3"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -64,12 +64,12 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "estraverse-fb": "^1.3.2",
+    "happy-dom": "^12.10.3",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",
     "rollup": "^2.26.3",
-    "tap-spec": "^5.0.0",
-    "tape": "^5.0.1",
-    "vue": "^2.5.21",
+    "vitest": "^0.34.6",
+    "vue": "^3.3.7",
     "watch": "^1.0.2"
   }
 }

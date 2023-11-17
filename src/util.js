@@ -1,8 +1,8 @@
 export function setAsyncState (vm, stateObject, state) {
-  vm.$set(vm.$data._asyncComputed[stateObject], 'state', state)
-  vm.$set(vm.$data._asyncComputed[stateObject], 'updating', state === 'updating')
-  vm.$set(vm.$data._asyncComputed[stateObject], 'error', state === 'error')
-  vm.$set(vm.$data._asyncComputed[stateObject], 'success', state === 'success')
+  vm.$data._asyncComputed[stateObject].state = state
+  vm.$data._asyncComputed[stateObject].updating = state === 'updating'
+  vm.$data._asyncComputed[stateObject].error = state === 'error'
+  vm.$data._asyncComputed[stateObject].success = state === 'success'
 }
 
 export function getterOnly (fn) {
