@@ -200,7 +200,7 @@ export default AsyncComputed
 export { AsyncComputed as AsyncComputedPlugin, AsyncComputedMixin }
 
 /* istanbul ignore if */
-if (typeof window !== 'undefined' && window.Vue) {
-  // Auto install in dist mode
-  window.Vue.use(AsyncComputed)
+if (typeof window !== 'undefined') {
+  // Provide as global in dist mode
+  window.AsyncComputed = AsyncComputed
 }
