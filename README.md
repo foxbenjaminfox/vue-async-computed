@@ -6,8 +6,8 @@
          alt="NPM Version">
   </a>
 
-  <a href="https://travis-ci.org/foxbenjaminfox/vue-async-computed">
-    <img src="https://img.shields.io/travis/foxbenjaminfox/vue-async-computed.svg?style=flat-square"
+  <a href="https://github.com/foxbenjaminfox/vue-async-computed/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/foxbenjaminfox/vue-async-computed/ci.yml?style=flat-square"
          alt="Build Status">
   </a>
 
