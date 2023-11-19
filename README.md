@@ -120,8 +120,9 @@ Alternately, you can link it directly from a CDN:
     },
     asyncComputed: {
       async sum () {
+        const total = this.x + this.y
         await new Promise(resolve => setTimeout(resolve, 1000))
-        return this.x + this.y
+        return total
       }
     }
   })
@@ -164,8 +165,9 @@ export default {
       the sum of the values to which you set vm.x and vm.y the previous second.
     */
     async sum () {
+      const total = this.x + this.y
       await new Promise(resolve => setTimeout(resolve, 1000))
-      return this.x + this.y
+      return total
     }
   }
 }
