@@ -47,7 +47,7 @@ jobs:
         # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
-    - run: npm run build
+    - run: npm run buildOnly
 
   lint:
     needs: install
