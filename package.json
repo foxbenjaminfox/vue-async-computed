@@ -26,6 +26,7 @@
     "babel": "npm run babel-umd -s && npm run babel-esm -s",
     "postbuild": "npm run test -s",
     "prepublishOnly": "npm run build -s",
+    "version": "node scripts/version.js",
     "patch": "npm version patch && npm publish",
     "minor": "npm version minor && npm publish",
     "major": "npm version major && npm publish",
