@@ -103,7 +103,7 @@ Alternately, you can link it directly from a CDN:
 
 ```html
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://unpkg.com/vue-async-computed@4.0.0"></script>
+<script src="https://unpkg.com/vue-async-computed@4.0.1"></script>
 
 <div id="app">
   <input type="number" v-model="x"> + <input type="number" v-model="y">
