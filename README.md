@@ -102,13 +102,14 @@ app.mount('#app')
 Alternately, you can link it directly from a CDN:
 
 ```html
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/vue-async-computed@4.0.0"></script>
+
 <div id="app">
   <input type="number" v-model="x"> + <input type="number" v-model="y">
   = {{sum == null ? 'Loading' : sum}}
 </div>
 
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://unpkg.com/vue-async-computed@4.0.0"></script>
 <script>
   const app = Vue.createApp({
     data () {
@@ -387,7 +388,7 @@ For each async computed property, an object is added to `$asyncComputed` that co
 
 It is meant to be used in your rendering code to display update / error information:
 
-````js
+````html
 <script>
 export default {
   asyncComputed: {
