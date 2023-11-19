@@ -62,7 +62,6 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-standard": "^5.0.0",
     "happy-dom": "^12.10.3",
     "mkdirp": "^3.0.1",
     "rimraf": "^5.0.5",
