@@ -27,20 +27,22 @@ With this plugin, you can have computed properties in Vue that are computed asyn
 Without using this plugin, you can't do this:
 
 ```js
-new Vue({
-  data: {
-    userId: 1
+export default {
+  data () {
+    return {
+      userId: 1
+    }
   },
   computed: {
     username () {
-      // Using vue-resource
-      return Vue.http.get('/get-username-by-id/' + this.userId)
+      return fetch(`/get-username-by-id/${this.userId}`)
         // This assumes that this endpoint will send us a response
         // that contains something like this:
         // {
         //   "username": "username-goes-here"
         // }
-        .then(response => response.data.username)
+        .then(response => response.json())
+        .then(user => user.username)
     }
   }
 }
@@ -49,14 +51,17 @@ new Vue({
 Or rather, you could, but it wouldn't do what you'd want it to do. But using this plugin, it works just like you'd expect:
 
 ```js
-new Vue({
-  data: {
-    userId: 1
+export default {
+  data () {
+    return {
+      userId: 1
+    }
   },
   asyncComputed: {
     username () {
-      return Vue.http.get('/get-username-by-id/' + this.userId)
-        .then(response => response.data.username)
+      return fetch(`/get-username-by-id/${this.userId}`)
+        .then(r => r.json())
+        .then(user => user.username)
     }
   }
 }
@@ -65,7 +70,7 @@ new Vue({
 This is especially useful with ES7 async functions:
 
 ```js
-new Vue({
+export default {
   asyncComputed: {
     async someCalculation () {
       const x = await someAsycFunction()
@@ -73,7 +78,7 @@ new Vue({
       return x + y
     }
   }
-})
+}
 ```
 
 ## Install
@@ -82,76 +87,90 @@ new Vue({
 npm install --save vue-async-computed
 ```
 
+And then install `vue-async-computed` via `app.use()` to make it available for all your components:
+
+```js
+import { createApp } from 'vue'
+import App from './App.vue'
+import AsyncComputed from 'vue-async-computed'
+
+const app = createApp(App)
+app.use(AsyncComputed)
+app.mount('#app')
+```
+
 Alternately, you can link it directly from a CDN:
 
 ```html
-<script src="https://unpkg.com/vue-async-computed"></script>
-<!--
-  That will always point to the latest version of vue-async-computed.
-  You probably want to instead pin it to a specific version:
--->
-<script src="https://unpkg.com/vue-async-computed@3.9.0"></script>
+<div id="app">
+  <input type="number" v-model="x"> + <input type="number" v-model="y">
+  = {{sum == null ? 'Loading' : sum}}
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/vue-async-computed@4.0.0"></script>
+<script>
+  const app = Vue.createApp({
+    data () {
+      return {
+        x: 2,
+        y: 3
+      }
+    },
+    asyncComputed: {
+      async sum () {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        return this.x + this.y
+      }
+    }
+  })
+  app.use(AsyncComputed)
+  app.mount('#app')
+</script>
 ```
-
-When used with a module system such as `webpack` or `browserify`, you need to explicitly install `vue-async-computed` via `Vue.use()`:
-
-```js
-import Vue from 'vue'
-import AsyncComputed from 'vue-async-computed'
-
-Vue.use(AsyncComputed)
-```
-
-You don't need to do this when using global script tags. So long as you include `vue-async-computed` in a script tag after Vue itself, it will be installed automatically.
 
 ## Usage example
 
 ```js
-import AsyncComputed from 'vue-async-computed'
-
-/* Initialize the plugin */
-Vue.use(AsyncComputed)
-
-/*
-   Then, when you create a Vue instance (or component),
-   you can pass an object named "asyncComputed" as well as
-   or instead of the standard "computed" option. The functions
-   you pass to "asyncComputed" should return promises, and the values
-   those promises resolve to are then asynchronously bound to the
-   Vue instance as they resolve. Just as with normal computed
-   properties, if the data the property depends on changes
-   then the property is re-run automatically.
-
-   You can almost completely ignore the fact that behind the
-   scenes they are asynchronous. The one thing to remember is
-   that until a asynchronous property's promise resolves
-   for the first time, the value of the computed property is null.
-*/
-
-const vm = new Vue({
-  data: {
-    x: 2,
-    y: 3
+export default {
+  data () {
+    return {
+      x: 2,
+      y: 3
+    }
   },
+
+  /*
+    When you create a Vue instance (or component),
+    you can pass an object named "asyncComputed" as well as
+    or instead of the standard "computed" option. The functions
+    you pass to "asyncComputed" should return promises, and the values
+    those promises resolve to are then asynchronously bound to the
+    Vue instance as they resolve. Just as with normal computed
+    properties, if the data the property depends on changes
+    then the property is re-run automatically.
+
+    You can almost completely ignore the fact that behind the
+    scenes they are asynchronous. The one thing to remember is
+    that until a asynchronous property's promise resolves
+    for the first time, the value of the computed property is null.
+  */
   asyncComputed: {
-    sum () {
-      const total = this.x + this.y
-      return new Promise(resolve =>
-        setTimeout(() => resolve(total), 1000)
-      )
+    /*
+      Until one second has passed, vm.sum will be null. After that,
+      vm.sum will be 5. If you change vm.x or vm.y, then one
+      second later vm.sum will automatically update itself to be
+      the sum of the values to which you set vm.x and vm.y the previous second.
+    */
+    async sum () {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      return this.x + this.y
     }
   }
-})
-
-/*
-   Until one second has passed, vm.sum will be null.  After that,
-   vm.sum will be 5. If you change vm.x or vm.y, then one
-   second later vm.sum will automatically update itself to be
-   the sum of the values to which you set vm.x and vm.y the previous second.
-*/
+}
 ```
 
-[Like with regular synchronous computed properties](https://vuejs.org/guide/computed.html#Computed-Setter), you can pass an object
+[Like with regular synchronous computed properties](https://vuejs.org/guide/essentials/computed.html#writable-computed), you can pass an object
 with a `get` method instead of a function, but unlike regular computed
 properties, async computed properties are always getter-only. If the
 object provided has a `set` method it will be ignored.
@@ -160,20 +179,23 @@ Async computed properties can also have a custom default value, which will
 be used until the data is loaded for the first time:
 
 ```js
-new Vue({
-  data: {
-    postId: 1
+export default {
+  data () {
+    return {
+      postId: 1
+    }
   },
   asyncComputed: {
     blogPostContent: {
       // The `get` function is the same as the function you would
       // pass directly as the value to `blogPostContent` if you
       // didn't need to specify a default value.
-      get () {
-        return Vue.http.get('/post/' + this.postId)
-          .then(response => response.data.postContent)
-       },
-       // The computed proporty `blogPostContent` will have
+      async get () {
+        const post = await fetch(`/post/${this.postId}`)
+          .then(response => response.json())
+        return post.postContent
+      },
+       // The computed property `blogPostContent` will have
        // the value 'Loading...' until the first time the promise
        // returned from the `get` function resolves.
        default: 'Loading...'
@@ -192,28 +214,31 @@ You can instead define the default value as a function, in order to depend on
 props or on data:
 
 ```js
-new Vue({
-  data: {
-    postId: 1
+export default {
+  data () {
+    return {
+      postId: 1
+    }
   },
   asyncComputed: {
     blogPostContent: {
-      get () {
-        return Vue.http.get('/post/' + this.postId)
-          .then(response => response.data.postContent)
+      async get () {
+        const post = await fetch(`/post/${this.postId}`)
+          .then(response => response.json())
+        return post.postContent
       },
       default () {
-        return 'Loading post ' + this.postId
+        return `Loading post ${this.postId}...`
       }
     }
   }
 }
 ```
 
-You can also set a custom global default value in the options passed to `Vue.use`:
+You can also set a custom global default value in the options passed to `app.use`:
 
 ```javascript
-Vue.use(AsyncComputed, {
+app.use(AsyncComputed, {
   default: 'Global default value'
 })
 ```
@@ -227,47 +252,50 @@ without any of its (local) dependencies changing, such as for instance the data 
 You can set up a `watch` property, listing the additional dependencies to watch.
 Your async computed property will then be recalculated also if any of the watched
 dependencies change, in addition to the real dependencies the property itself has:
-```js
 
-new Vue({
-  data: {
-    postId: 1,
-    timesPostHasBeenUpdated: 0
+```js
+export default {
+  data () {
+    return {
+      postId: 1,
+      timesPostHasBeenUpdated: 0
+    }
   },
   asyncComputed: {
     // blogPostContent will update its contents if postId is changed
     // to point to a diffrent post, but will also refetch the post's
     // contents when you increment timesPostHasBeenUpdated.
     blogPostContent: {
-      get () {
-        return Vue.http.get('/post/' + this.postId)
-          .then(response => response.data.postContent)
+      async get () {
+        const post = await fetch(`/post/${this.postId}`)
+          .then(response => response.json())
+        return post.postContent
       },
       watch: ['timesPostHasBeenUpdated']
     }
   }
 }
 ```
-Just like with Vue's normal `watch`, you can use a dotted path in order to watch a nested property. For example, `watch: ['a.b.c', 'd.e']` would declare a dependancy on `this.a.b.c` and on `this.d.e`.
 
-You can trigger re-computation of an async computed property manually, e.g. to re-try if an error occured during evaluation. This should be avoided if you are able to achieve the same result using a watched property.
+Just like with Vue's normal `watch`, you can use a dotted path in order to watch a nested property. For example, `watch: ['a.b.c', 'd.e']` would declare a dependency on `this.a.b.c` and on `this.d.e`.
+
+You can trigger re-computation of an async computed property manually, e.g. to re-try if an error occurred during evaluation. This should be avoided if you are able to achieve the same result using a watched property.
 
 ````js
-
-new Vue({
+export default {
   asyncComputed: {
     blogPosts: {
-      get () {
-        return Vue.http.get('/posts')
-          .then(response => response.data)
-      },
+      async get () {
+        return fetch('/posts')
+          .then(response => response.json())
+      }
     }
   },
   methods: {
     refresh() {
       // Triggers an immediate update of blogPosts
       // Will work even if an update is in progress.
-      this.$asyncComputed.blogPosts.update();
+      this.$asyncComputed.blogPosts.update()
     }
   }
 }
@@ -280,17 +308,20 @@ If you need more control over when the computation should be rerun you can use `
 
 ```js
 
-new Vue({
-  data: {
-    postId: 1,
-    // Imagine pageType can be one of 'index', 'details' and 'edit'.
-    pageType: 'index'
+export default {
+  data () {
+    return {
+      postId: 1,
+      // Imagine pageType can be one of 'index', 'details' and 'edit'.
+      pageType: 'index'
+    }
   },
   asyncComputed: {
     blogPostContent: {
-      get () {
-        return Vue.http.get('/post/' + this.postId)
-          .then(response => response.data.postContent)
+      async get () {
+        const post = await fetch(`/post/${this.postId}`)
+          .then(response => response.json())
+        return post.postContent
       },
       // Will update whenever the pageType or postId changes,
       // but only if the pageType is not 'index'. This way the
@@ -314,16 +345,19 @@ property will only be computed the first time it's accessed.
 
 For example:
 ```js
-new Vue({
-  data: {
-    id: 1
+export default {
+  data () {
+    return {
+      id: 1
+    }
   },
   asyncComputed: {
     mightNotBeNeeded: {
       lazy: true,
-      get () {
-        return Vue.http.get('/might-not-be-needed/' + this.id)
-          .then(response => response.data.value)
+      async get () {
+        return fetch(`/might-not-be-needed/${this.id}`)
+          .then(response => response.json())
+          .then(response => response.value)
       }
       // The value of `mightNotBeNeeded` will only be
       // calculated when it is first accessed.
@@ -342,7 +376,7 @@ For each async computed property, an object is added to `$asyncComputed` that co
   state: 'updating',
   // A boolean that is true while the property is updating.
   updating: true,
-  // The property finished updating wihtout errors (the promise was resolved) and the current value is available.
+  // The property finished updating without errors (the promise was resolved) and the current value is available.
   success: false,
   // The promise was rejected.
   error: false,
@@ -351,29 +385,40 @@ For each async computed property, an object is added to `$asyncComputed` that co
 }
 ```
 
-It is meant to be used in your rendering code to display update / error information.
+It is meant to be used in your rendering code to display update / error information:
 
 ````js
-new Vue({
+<script>
+export default {
   asyncComputed: {
-    posts() {
-      return Vue.http.get('/posts')
-        .then(response => response.data)
-      }
+    async posts() {
+      return fetch('/posts').then(r => r.json())
     }
   }
 }
-// This will display a loading message every time the posts are updated:
-// <div v-if="$asyncComputed.posts.updating"> (Re)loading posts </div>
-
-// If you only want to display the message the first time the posts load, you can use the fact that the default value is null:
-// <div v-if="$asyncComputed.posts.updating && posts === null"> Loading posts </div>
-
-// You can display an error message if loading the posts failed.
-// The vue-resources library passes the error response on to the rejection handler.
-// It is therefore available in $asyncComputed.posts.exception
-// <div v-else-if="$asyncComputed.posts.error"> Error while loading posts: $asyncComputed.posts.exception.statusText </div>
+</script>
+<template>
+  <!-- This will display a loading message every time the posts are updated: -->
+  <template v-if="$asyncComputed.posts.updating">Loading...</template>
+  
+  <!-- You can display an error message if loading the posts failed. -->
+  <template v-else-if="$asyncComputed.posts.error">
+    Error while loading posts: {{ $asyncComputed.posts.exception }}
+    <button @click="$asyncComputed.posts.update()">Retry</button>
+  </template>
+  
+  <!-- Or finally, display the result: -->
+  <template v-else>
+    {{ posts }}
+  </template>
+</template>
 ````
+
+Note: If you want to display a special message the first time the posts load, you can use the fact that the default value is null:
+
+```html
+<div v-if="$asyncComputed.posts.updating && posts === null"> Loading posts </div>
+```
 
 ## Global error handling
 
@@ -389,7 +434,7 @@ threw the error and the error's stack trace.
 For example:
 
 ```js
-Vue.use(AsyncComputed, {
+app.use(AsyncComputed, {
   errorHandler (stack) {
     console.log('Hey, an error!')
     console.log('---')
@@ -398,7 +443,7 @@ Vue.use(AsyncComputed, {
 })
 
 // Or with `useRawError`:
-Vue.use(AsyncComputed, {
+app.use(AsyncComputed, {
   useRawError: true,
   errorHandler (err, vm, stack) {
     console.log('An error occurred!')
