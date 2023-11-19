@@ -142,7 +142,7 @@ function initDataWithAsyncComputed (options, pluginOptions) {
     for (const key in asyncComputed) {
       const item = this.$options.asyncComputed[key]
 
-      var value = generateDefault.call(this, item, pluginOptions)
+      const value = generateDefault.call(this, item, pluginOptions)
       if (isComputedLazy(item)) {
         initLazy(data, key, value)
         this.$options.computed[key] = makeLazyComputed(key)
