@@ -1,4 +1,4 @@
-import Vue, { PluginFunction } from 'vue';
+import Vue, { PluginFunction, PluginObject } from 'vue';
 
 export interface IAsyncComputedOptions {
   errorHandler?: (error: string | Error) => void;
@@ -6,9 +6,9 @@ export interface IAsyncComputedOptions {
   default?: any;
 }
 
-export default class AsyncComputed {
+export default class AsyncComputed extends PluginObject<void> {
   constructor(options?: IAsyncComputedOptions);
-  static install: PluginFunction<never>;
+  static install: PluginFunction<void>;
   static version: string;
 }
 
